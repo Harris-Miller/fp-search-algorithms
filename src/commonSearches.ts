@@ -1,5 +1,5 @@
 import { generalizedSearch } from './generalizedSearch';
-import { identity } from './utils';
+import { identity } from './fp';
 
 /**
  * Performs a breadth-first search over a set of

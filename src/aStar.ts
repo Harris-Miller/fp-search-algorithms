@@ -1,6 +1,6 @@
 import { generalizedSearch } from './generalizedSearch';
 import { leastCostly } from './leastCostly';
-import { fst, isNil, last, snd } from './utils';
+import { fst, isNil, last, snd } from './fp';
 
 /**
  * Performs a best-first search

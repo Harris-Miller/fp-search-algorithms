@@ -1,4 +1,4 @@
-import { isNil } from './utils';
+import { isNil } from './fp';
 
 /**
  * Takes an `initial` seed value and applies `next` to it

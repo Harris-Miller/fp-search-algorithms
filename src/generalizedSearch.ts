@@ -1,5 +1,5 @@
 import type { SearchState } from './types';
-import { isNil } from './utils';
+import { isNil } from './fp';
 
 /**
  * Takes an `initial` seed value and applies `next` to it until either `found` returns `true` or `next` returns `null`

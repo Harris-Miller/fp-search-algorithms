@@ -1,6 +1,6 @@
 import { generalizedSearch } from './generalizedSearch';
 import { leastCostly } from './leastCostly';
-import { fst, isNil, last, snd } from './utils';
+import { fst, isNil, last, snd } from './fp';
 
 /**
  * This API to Dijkstra's algorithm is useful in the common case when next

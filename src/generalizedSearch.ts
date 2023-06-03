@@ -1,5 +1,5 @@
-import type { SearchState } from './types';
 import { isNil } from './fp';
+import type { SearchState } from './types';
 
 /**
  * Takes an `initial` seed value and applies `next` to it until either `found` returns `true` or `next` returns `null`
@@ -65,6 +65,7 @@ const nextSearchState =
  * searches in terms of this function, we reduce the chances of errors sneaking
  * into each separate implementation.
  *
+ * @public
  * @param makeKey - Function to turn a @state@ into a key by which states will be compared when determining whether a state has be enqueued and / or visited
  * @param better - Function which when given a choice between an `oldPath` and `newPath` to a state, returns `true` when `newPath` is a "better" path than `oldPath` and should thus be inserted
  * @param next - Function to generate "next" states given a current state

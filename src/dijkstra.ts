@@ -1,6 +1,6 @@
-import { generalizedSearch } from './generalizedSearch';
-import { leastCostly } from './leastCostly';
 import { fst, isNil, last, snd } from './fp';
+import { generalizedSearch } from './generalizedSearch';
+import { leastCostly } from './utility';
 
 /**
  * This API to Dijkstra's algorithm is useful in the common case when next
@@ -13,6 +13,7 @@ import { fst, isNil, last, snd } from './fp';
  * This implementation makes that transformation, then transforms that result
  * back into the desired result from `dijkstraAssoc`
  *
+ * @public
  * @param next - function to generate list of neighboring states with associated transition costs given the current state
  * @param found - Predicate to determine if solution found. 'dijkstraAssoc' returns the shortest path to the first state for which this predicate returns `true`
  * @param initial - Initial state
@@ -47,6 +48,7 @@ export const dijkstraAssoc = <TState>(
  * state for which `found` returns `true`. Returns `undefined` if no path to a
  * solved state is possible.
  *
+ * @public
  * @param next - Function to generate list of neighboring states given the current state
  * @param cost - Function to generate transition costs between neighboring states
  * @param found - Predicate to determine if solution found. 'dijkstra' returns the shortest path to the first state for which this predicate returns `true`

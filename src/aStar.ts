@@ -1,6 +1,6 @@
-import { generalizedSearch } from './generalizedSearch';
-import { leastCostly } from './leastCostly';
 import { fst, isNil, last, snd } from './fp';
+import { generalizedSearch } from './generalizedSearch';
+import { leastCostly } from './utility';
 
 /**
  * Performs a best-first search
@@ -11,6 +11,7 @@ import { fst, isNil, last, snd } from './fp';
  * remaining cost to reach a solved state, then the returned path is the
  * shortest path. Returns 'Nothing' if no path to a solved state is possible.
  *
+ * @public
  * @param next - Function to generate list of neighboring states with associated transition costs given the current state
  * @param remaining - Estimate on remaining cost given a state
  * @param found - Predicate to determine if solution found. `aStar` returns the shortest path to the first state for which this predicate returns `true`
@@ -57,6 +58,7 @@ export const aStarAssoc = <TState>(
  * remaining cost to reach a solved state, then the returned path is the
  * shortest path. Returns `undefined` if no path to a solved state is possible.
  *
+ * @public
  * @param next - Function to generate list of neighboring states given the current state
  * @param cost - Function to generate transition costs between neighboring states
  * @param remaining - Estimate on remaining cost given a state

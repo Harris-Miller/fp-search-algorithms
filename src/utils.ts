@@ -1,3 +1,4 @@
+export const identity = <T>(value: T): T => value;
 export const isNil = (value: any): value is null | undefined => value == null;
 export const fst = <A, B>(tuple: [A, B]): A => tuple[0];
 export const snd = <A, B>(tuple: [A, B]): B => tuple[1];

@@ -2,6 +2,21 @@ import { generalizedSearch } from './generalizedSearch';
 import { leastCostly } from './leastCostly';
 import { fst, isNil, last, snd } from './utils';
 
+/**
+ * Performs a best-first search
+ * using the A* search algorithm, starting with the state @initial@, generating
+ * neighboring states and their associated costs with @next@, and an estimate of
+ * the remaining cost with @remaining@. This returns a path to a state for which
+ * @found@ returns 'True'. If @remaining@ is strictly a lower bound on the
+ * remaining cost to reach a solved state, then the returned path is the
+ * shortest path. Returns 'Nothing' if no path to a solved state is possible.
+ *
+ * @param next - Function to generate list of neighboring states with associated transition costs given the current state
+ * @param remaining - Estimate on remaining cost given a state
+ * @param found - Predicate to determine if solution found. `aStar` returns the shortest path to the first state for which this predicate returns `true`
+ * @param initial - Initial state
+ * @returns [Total cost, list of steps] for the first path found which satisfies the given predicate
+ */
 export const aStarAssoc = <TState>(
   next: (state: TState) => [TState, number][],
   remaining: (state: TState) => number,
@@ -33,15 +48,22 @@ export const aStarAssoc = <TState>(
   return unpack(r);
 };
 
-// aStar next cost remaining found initial =
-//   -- This API to A* search is useful when the state transition
-//   -- function and the cost function are logically separate.
-//   -- It is implemented by using @aStarAssoc@ with appropriate mapping of
-//   -- arguments.
-//   aStarAssoc next' remaining found initial
-//   where
-//     next' st = map (\new_st -> (new_st, cost st new_st)) $
-//                Foldable.toList (next st)
+/**
+ * Performs a best-first search
+ * using the A* search algorithm, starting with the state @initial@, generating
+ * neighboring states with `next`, their cost with @cost@, and an estimate of
+ * the remaining cost with `remaining`. This returns a path to a state for which
+ * `found` returns `true`. If `remaining` is strictly a lower bound on the
+ * remaining cost to reach a solved state, then the returned path is the
+ * shortest path. Returns `undefined` if no path to a solved state is possible.
+ *
+ * @param next - Function to generate list of neighboring states given the current state
+ * @param cost - Function to generate transition costs between neighboring states
+ * @param remaining - Estimate on remaining cost given a state
+ * @param found - Predicate to determine if solution found. `aStar` returns the shortest path to the first state for which this predicate returns `true`
+ * @param initial - Initial state
+ * @returns - [Total cost, list of steps] for the first path found which satisfies the given predicate
+ */
 export const aStar = <TState>(
   next: (state: TState) => TState[],
   cost: (stA: TState, stB: TState) => number,

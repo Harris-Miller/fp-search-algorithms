@@ -48,7 +48,7 @@ export const dijkstraAssoc = <TState>(
  * solved state is possible.
  *
  * @param next - Function to generate list of neighboring states given the current state
- * @param cost - Function to generate transition costs between neighboring states. This is only called for adjacent states, so it is safe to have this function be partial for non-neighboring states.
+ * @param cost - Function to generate transition costs between neighboring states
  * @param found - Predicate to determine if solution found. 'dijkstra' returns the shortest path to the first state for which this predicate returns `true`
  * @param initial
  * @returns

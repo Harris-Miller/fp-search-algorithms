@@ -60,7 +60,6 @@ export const dijkstra = <TState>(
   initial: TState
 ): [number, TState[]] | undefined => {
   // create assocNext out of `next` and `cost`
-  const assocNext = (st: TState) => next(st).map<[TState, number]>(newSt => [newSt, cost(st, newSt)]);
-  // and leverage `dijkstraAssoc` algorithm to do the rest
-  return dijkstraAssoc(assocNext, found, initial);
+  const nextAssoc = (st: TState) => next(st).map<[TState, number]>(newSt => [newSt, cost(st, newSt)]);
+  return dijkstraAssoc(nextAssoc, found, initial);
 };

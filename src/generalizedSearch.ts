@@ -79,18 +79,22 @@ export const generalizedSearch = <TState, TKey>(
   found: (state: TState) => boolean,
   initial: TState
 ): TState[] | undefined => {
+  const initialKey = makeKey(initial);
   const initialState: SearchState<TState, TKey> = {
     current: initial,
-    paths: new Map([[makeKey(initial), []]]),
+    paths: new Map([[initialKey, []]]),
     queue: [],
-    visited: new Set([makeKey(initial)])
+    visited: new Set([initialKey])
   };
+
   const end = findIterate(
     nextSearchState(better, makeKey, next),
     (a: SearchState<TState, TKey>) => found(a.current),
     initialState
   );
+
   const getSteps = (searchState: SearchState<TState, TKey> | null) =>
     searchState?.paths.get(makeKey(searchState.current));
+
   return getSteps(end)?.reverse();
 };

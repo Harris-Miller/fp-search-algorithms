@@ -1,0 +1,22 @@
+{
+  "name": "search-algorithms",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@types/ramda": "^0.29.2",
+    "ramda": "^0.29.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node18": "^2.0.1",
+    "eslint": "^8.42.0",
+    "eslint-config-harris": "^3.6.0",
+    "typescript": "^5.1.3"
+  }
+}

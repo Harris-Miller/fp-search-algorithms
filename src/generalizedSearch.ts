@@ -15,7 +15,11 @@ type SearchState<T> = {
  * Takes an `initial` seed value and applies `next` to it until either `found` returns `true` or `next` returns `null`
  * @private
  */
-const findIterate = <T>(next: (a: T) => T | null, found: (a: T) => boolean, initial: T | null): T | null => {
+const findIterate = <T>(
+  next: (a: SearchState<T>) => SearchState<T> | null,
+  found: (a: SearchState<T>) => boolean,
+  initial: SearchState<T> | null
+): SearchState<T> | null => {
   let current = initial;
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -59,7 +63,7 @@ const nextSearchState =
         paths: newPaths,
         queue: remainingQueue,
         state: newState,
-        visited: [...current.visited, toString(newState)]
+        visited: [toString(newState), ...current.visited]
       };
 
       if (!current.visited.includes(toString(newState))) return newCurrent;
@@ -67,6 +71,7 @@ const nextSearchState =
       current = newCurrent;
     }
   };
+
 /**
  * Workhorse simple search algorithm, generalized over search container
  * and path-choosing function. The idea here is that many search algorithms are
@@ -81,7 +86,6 @@ const nextSearchState =
  * @param initial - Initial state
  * @returns First path found to a state matching the predicate, or `null` if no such path exists.
  */
-
 export const generalizedSearch = <T>(
   better: (oldState: T[], newState: T[]) => boolean,
   next: (state: T) => T[],

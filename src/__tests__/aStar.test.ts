@@ -1,4 +1,4 @@
-import { isNotNil } from 'ramda';
+import { indexBy, isNotNil, toString } from 'ramda';
 
 import { readFileSync } from 'node:fs';
 
@@ -27,26 +27,25 @@ const createGrid = (data: string) => {
   return rows.flatMap((row, i) => row.split('').map((v, j) => ({ height: heightMap[v], letter: v, x: i, y: j })));
 };
 
-const distanceRemaining =
+const heuristic =
   ({ x: xA, y: yA }: Point) =>
   ({ x: xB, y: yB }: Point) =>
     Math.abs(xA - xB) + Math.abs(yA - yB);
 
-const createVertices =
-  (grid: Point[]) =>
+const canMoveTo = (pt1: Point, pt2: Point) => pt2.height - pt1.height < 2;
+
+const makeNext =
+  (gridKeyMap: Record<string, Point>) =>
   (point: Point): Point[] => {
     const { x, y } = point;
-    const neighborPoints = [
+    const neighborKeys = [
       { x: x - 1, y },
       { x: x + 1, y },
       { x, y: y - 1 },
       { x, y: y + 1 }
-    ];
-    const neighbors = neighborPoints
-      .map(({ x: nX, y: nY }) => grid.find(({ x: gX, y: gY }) => gX === nX && gY === nY))
-      .filter(isNotNil);
+    ].map(toString);
+    const neighbors = neighborKeys.map(k => gridKeyMap[k]).filter(isNotNil);
 
-    const canMoveTo = (pt1: Point, pt2: Point) => pt2.height - pt1.height < 2;
     return neighbors.filter((neighbor: Point) => canMoveTo(point, neighbor));
   };
 
@@ -60,10 +59,12 @@ describe('aStar', () => {
     const start = grid.find(({ letter }) => letter === 'S')!;
     const end = grid.find(({ letter }) => letter === 'E')!;
 
+    const gridKeyMap = indexBy(({ x, y }) => toString({ x, y }), grid);
+
     const r = aStar(
-      createVertices(grid),
+      makeNext(gridKeyMap),
       () => 1,
-      distanceRemaining(end),
+      heuristic(end),
       state => state === end,
       start
     )!;

@@ -1,4 +1,4 @@
-import { isNotNil } from 'ramda';
+import { indexBy, isNotNil, toString } from 'ramda';
 
 import { readFileSync } from 'node:fs';
 
@@ -14,47 +14,63 @@ const heightMap = {
 };
 
 // @ts-expect-error
-const hills = readFileSync(new URL('./src/__tests__/hills.txt', import.meta.url), { encoding: 'utf8' });
+const data = readFileSync(new URL('./src/__tests__/hills.txt', import.meta.url), { encoding: 'utf8' });
 
-const createGrid = data => {
-  const rows = data.split('\n');
+const createGrid = rows =>
+  rows.flatMap((row, i) => row.split('').map((v, j) => ({ height: heightMap[v], letter: v, x: i, y: j })));
 
-  return rows.flatMap((row, i) => row.split('').map((v, j) => ({ height: heightMap[v], letter: v, x: i, y: j })));
-};
-
-const distanceRemaining =
+const heuristic =
   ({ x: xA, y: yA }) =>
   ({ x: xB, y: yB }) =>
     Math.abs(xA - xB) + Math.abs(yA - yB);
 
-const createVertices = grid => point => {
+const canMoveTo = pt1 => pt2 => pt2.height - pt1.height < 2;
+
+const isInBounds =
+  (xMax, yMax) =>
+  ({ x, y }) =>
+    x >= 0 && x <= xMax && y >= 0 && y <= yMax;
+
+const makeNext = (xMax, yMax, gridKeyMap) => point => {
   const { x, y } = point;
-  const neighborPoints = [
+  const neighborKeys = [
     { x: x - 1, y },
     { x: x + 1, y },
     { x, y: y - 1 },
     { x, y: y + 1 }
-  ];
-  const neighbors = neighborPoints
-    .map(({ x: nX, y: nY }) => grid.find(({ x: gX, y: gY }) => gX === nX && gY === nY))
-    .filter(isNotNil);
+  ].map(toString);
 
-  const canMoveTo = (pt1, pt2) => pt2.height - pt1.height < 2;
-  return neighbors.filter(neighbor => canMoveTo(point, neighbor));
+  const r = neighborKeys
+    .map(k => gridKeyMap[k])
+    .filter(isNotNil)
+    .filter(isInBounds(xMax, yMax))
+    .filter(canMoveTo(point));
+
+  // console.log(r);
+
+  return r;
 };
 
-const grid = createGrid(hills);
+const rows = data.split('\n');
 
-// let start1 = fst $ fromJust $ find (\(_, v) -> v == 'S') grid
-// let end1 = fst $ fromJust $ find (\(_, v) -> v == 'E') grid
+const grid = createGrid(rows);
+
+// console.log(grid);
 
 const start = grid.find(({ letter }) => letter === 'S');
 const end = grid.find(({ letter }) => letter === 'E');
 
+const gridKeyMap = indexBy(({ x, y }) => toString({ x, y }), grid);
+
+// console.log(gridKeyMap);
+
+const xMax = rows.length - 1;
+const yMax = rows[0].length - 1;
+
 const r = aStar(
-  createVertices(grid),
+  makeNext(xMax, yMax, gridKeyMap),
   () => 1,
-  distanceRemaining(end),
+  heuristic(end),
   state => state === end,
   start
 );

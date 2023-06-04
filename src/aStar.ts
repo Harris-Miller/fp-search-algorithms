@@ -25,7 +25,7 @@ export const aStarAssoc = <T>(
   remaining: (state: T) => number,
   found: (state: T) => boolean,
   initial: T
-): [number, T[]] | undefined => {
+): [number, T[]] | null => {
   const nextAssoc = ([_, [oldCost, oldSt]]: [number, [number, T]]) =>
     next(oldSt).map<[number, [number, T]]>(([newSt, cost]: [T, number]) => {
       const newCost = oldCost + cost;
@@ -33,8 +33,8 @@ export const aStarAssoc = <T>(
       return [newEst, [newCost, newSt]];
     });
 
-  const unpack = (packedStates: [number, [number, T]][] | undefined): [number, T[]] | undefined => {
-    if (isNil(packedStates)) return packedStates;
+  const unpack = (packedStates: [number, [number, T]][] | null): [number, T[]] | null => {
+    if (isNil(packedStates)) return null;
     if (!packedStates.length) return [0, []];
     // (fst . snd . last $ packed_states, map snd2 packed_states)
     return [fst(snd(last(packedStates)!)), packedStates.map(x => snd(snd(x)))];
@@ -68,7 +68,7 @@ export const aStar = <T>(
   remaining: (state: T) => number,
   found: (state: T) => boolean,
   initial: T
-): [number, T[]] | undefined => {
+): [number, T[]] | null => {
   // create assocNext out of `next` and `cost`
   const nextAssoc = (st: T) => next(st).map<[T, number]>(newSt => [newSt, cost(st, newSt)]);
   return aStarAssoc(nextAssoc, remaining, found, initial);

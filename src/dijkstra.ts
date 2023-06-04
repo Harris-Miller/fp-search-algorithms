@@ -21,19 +21,19 @@ import { leastCostly } from './utility';
  * @param initial - Initial state
  * @returns [Total cost, list of steps] for the first path found which satisfies the given predicate
  */
-export const dijkstraAssoc = <T>(
-  next: (state: T) => [T, number][],
-  found: (state: T) => boolean,
-  initial: T
-): [number, T[]] | undefined => {
-  const unpack = (packedStates: [number, T][] | undefined): [number, T[]] | undefined => {
+export const dijkstraAssoc = <TState>(
+  next: (state: TState) => [TState, number][],
+  found: (state: TState) => boolean,
+  initial: TState
+): [number, TState[]] | null => {
+  const unpack = (packedStates: [number, TState][] | null): [number, TState[]] | null => {
     if (isNil(packedStates)) return packedStates;
     if (!packedStates.length) return [0, []];
     return [fst(last(packedStates)!), packedStates.map(x => x[1])];
   };
 
-  const nextSt = ([oldCost, st]: [number, T]) =>
-    next(st).map<[number, T]>(([newSt, newCost]) => [newCost + oldCost, newSt]);
+  const nextSt = ([oldCost, st]: [number, TState]) =>
+    next(st).map<[number, TState]>(([newSt, newCost]) => [newCost + oldCost, newSt]);
 
   const r = generalizedSearch(leastCostly, nextSt, state => found(snd(state)), [0, initial]);
   return unpack(r);
@@ -44,7 +44,7 @@ export const dijkstraAssoc = <T>(
  * a set of states using Dijkstra's algorithm, starting with `initial`,
  * generating neighboring states with `next`, and their incremental costs with
  * `costs`. This will find the least-costly path from an initial state to a
- * state for which `found` returns `true`. Returns `undefined` if no path to a
+ * state for which `found` returns `true`. Returns `null` if no path to a
  * solved state is possible.
  *
  * @public
@@ -59,7 +59,7 @@ export const dijkstra = <T>(
   cost: (stA: T, stB: T) => number,
   found: (state: T) => boolean,
   initial: T
-): [number, T[]] | undefined => {
+): [number, T[]] | null => {
   // create assocNext out of `next` and `cost`
   const nextAssoc = (st: T) => next(st).map<[T, number]>(newSt => [newSt, cost(st, newSt)]);
   return dijkstraAssoc(nextAssoc, found, initial);

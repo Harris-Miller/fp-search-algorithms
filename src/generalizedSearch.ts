@@ -15,7 +15,7 @@ type SearchState<T> = {
  * Takes an `initial` seed value and applies `next` to it until either `found` returns `true` or `next` returns `null`
  * @private
  */
-const findIterate = <T>(next: (a: T) => T | undefined, found: (a: T) => boolean, initial: T | undefined): T | null => {
+const findIterate = <T>(next: (a: T) => T | null, found: (a: T) => boolean, initial: T | null): T | null => {
   let current = initial;
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -31,7 +31,7 @@ const findIterate = <T>(next: (a: T) => T | undefined, found: (a: T) => boolean,
  */
 const nextSearchState =
   <T>(better: (as: T[], bs: T[]) => boolean, next: (state: T) => T[]) =>
-  (initial: SearchState<T>): SearchState<T> | undefined => {
+  (initial: SearchState<T>): SearchState<T> | null => {
     let current = initial;
 
     const updateQueuePaths = ([queue, paths]: [T[], Record<string, T[]>], st: T): [T[], Record<string, T[]>] => {
@@ -52,7 +52,7 @@ const nextSearchState =
     while (true) {
       const [newQueue, newPaths] = next(current.state).reduce(updateQueuePaths, [current.queue, current.paths]);
 
-      if (!newQueue.length) return undefined;
+      if (!newQueue.length) return null;
       const [newState, ...remainingQueue] = newQueue;
 
       const newCurrent: SearchState<T> = {
@@ -79,7 +79,7 @@ const nextSearchState =
  * @param next - Function to generate "next" states given a current state
  * @param found - Predicate to determine if solution found. `generalizedSearch` returns a path to the first state for which this predicate returns `true`.
  * @param initial - Initial state
- * @returns First path found to a state matching the predicate, or `undefined` if no such path exists.
+ * @returns First path found to a state matching the predicate, or `null` if no such path exists.
  */
 
 export const generalizedSearch = <T>(
@@ -87,7 +87,7 @@ export const generalizedSearch = <T>(
   next: (state: T) => T[],
   found: (state: T) => boolean,
   initial: T
-): T[] | undefined => {
+): T[] | null => {
   const initialKey = toString(initial);
   const initialSearchState: SearchState<T> = {
     paths: { [initialKey]: [] },
@@ -100,5 +100,5 @@ export const generalizedSearch = <T>(
 
   const getSteps = (searchState: SearchState<T> | null) => searchState?.paths[toString(searchState.state)];
 
-  return getSteps(end)?.reverse();
+  return getSteps(end)?.reverse() ?? null;
 };

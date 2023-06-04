@@ -1,56 +1,29 @@
 import { isNil, toString } from 'ramda';
 
-import type { SearchState } from './types';
+/**
+ * Internal type used to manage search state
+ * @private
+ */
+type SearchState<TState> = {
+  paths: Record<string, TState[]>;
+  queue: TState[];
+  state: TState;
+  visited: string[];
+};
 
 /**
  * Takes an `initial` seed value and applies `next` to it until either `found` returns `true` or `next` returns `null`
  * @private
  */
 const findIterate = <T>(next: (a: T) => T | undefined, found: (a: T) => boolean, initial: T | undefined): T | null => {
-  if (isNil(initial)) return null;
-  if (found(initial)) return initial;
-  return findIterate(next, found, next(initial));
+  let current = initial;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    if (isNil(current)) return null;
+    if (found(current)) return current;
+    current = next(current);
+  }
 };
-
-// const nextSearchState2 =
-//   <T>(better: (as: T[], bs: T[]) => boolean) =>
-//   (next: (st: T) => T[]) =>
-//   (initial: T): T | undefined => {
-//     const state = initial;
-//     const initialKey = toString(initial);
-//     const paths: Record<string, T[]> = { [initialKey]: [] };
-//     const queue = [];
-//     const visited = [initialKey];
-
-//     const updateQueuePaths2 = (
-//       { queue: oldQueue, paths: oldPaths }: { paths: Record<string, T[]>; queue: T[] },
-//       nextState: T
-//     ): { paths: Record<string, T[]>; queue: T[] } => {
-//       const nextStateKey = toString(nextState);
-
-//       if (visited.includes(nextStateKey)) return { paths: oldPaths, queue: oldQueue };
-
-//       const stepsSoFar = paths[toString(state)];
-
-//       const nextQueue = [...oldQueue, nextState];
-//       const nextPaths = { ...paths, [nextStateKey]: [nextState, ...stepsSoFar] };
-
-//       const oldPath = paths[nextStateKey];
-
-//       if (!oldPath) return { paths: nextPaths, queue: nextQueue };
-
-//       return better(oldPath, [nextState, ...stepsSoFar]) ? { paths: nextPaths, queue: nextQueue } : { paths: nextPaths, queue: oldQueue };
-
-//       // console.log('isBetter', isBetter);
-
-//       return isBetter;
-//     };
-
-//     // eslint-disable-next-line no-constant-condition
-//     while (true) {
-//       ({ paths, queue }) = next(state).reduce(updateQueuePaths2(state), { paths, queue });
-//     }
-//   };
 
 /**
  * Moves from one @searchState@ to the next in the generalized search algorithm
@@ -58,41 +31,46 @@ const findIterate = <T>(next: (a: T) => T | undefined, found: (a: T) => boolean,
  */
 const nextSearchState =
   <TState>(better: (as: TState[], bs: TState[]) => boolean, next: (state: TState) => TState[]) =>
-  (oldState: SearchState<TState>): SearchState<TState> | undefined => {
-    const updateQueuePaths = (
-      [oldQueue, oldPaths]: [TState[], Map<string, TState[]>],
-      st: TState
-    ): [TState[], Map<string, TState[]>] => {
-      if (oldState.visited.has(toString(st))) return [oldQueue, oldPaths];
+  (initial: SearchState<TState>): SearchState<TState> | undefined => {
+    let current = initial;
 
-      const stepsSoFar = oldState.paths.get(toString(oldState.current))!;
+    const updateQueuePaths = (
+      [oldQueue, oldPaths]: [TState[], Record<string, TState[]>],
+      st: TState
+    ): [TState[], Record<string, TState[]>] => {
+      if (current.visited.includes(toString(st))) return [oldQueue, oldPaths];
+
+      const stepsSoFar = current.paths[toString(current.state)];
 
       const nextQueue = [...oldQueue, st];
-      const nextPaths = new Map<string, TState[]>(oldPaths).set(toString(st), [st, ...stepsSoFar]);
+      const nextPaths = { ...oldPaths, [toString(st)]: [st, ...stepsSoFar] };
 
-      const oldPath = oldPaths.get(toString(st));
+      const oldPath = oldPaths[toString(st)];
 
       if (!oldPath) return [nextQueue, nextPaths];
 
       return better(oldPath, [st, ...stepsSoFar]) ? [nextQueue, nextPaths] : [oldQueue, oldPaths];
     };
 
-    const newQueuePaths = next(oldState.current).reduce(updateQueuePaths, [oldState.queue, oldState.paths]);
-    const [newQueue, newPaths] = newQueuePaths;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const [newQueue, newPaths] = next(current.state).reduce(updateQueuePaths, [current.queue, current.paths]);
 
-    if (!newQueue.length) return undefined;
+      if (!newQueue.length) return undefined;
+      const [newCurrent, ...remainingQueue] = newQueue;
 
-    const [newCurrent, ...remainingQueue] = newQueue;
-    const newState: SearchState<TState> = {
-      current: newCurrent,
-      paths: newPaths,
-      queue: remainingQueue,
-      visited: new Set<string>(oldState.visited).add(toString(newCurrent))
-    };
+      const newState: SearchState<TState> = {
+        paths: newPaths,
+        queue: remainingQueue,
+        state: newCurrent,
+        visited: [...current.visited, toString(newCurrent)]
+      };
 
-    return oldState.visited.has(toString(newState.current)) ? nextSearchState(better, next)(newState) : newState;
+      if (!current.visited.includes(toString(newCurrent))) return newState;
+
+      current = newState;
+    }
   };
-
 /**
  * Workhorse simple search algorithm, generalized over search container
  * and path-choosing function. The idea here is that many search algorithms are
@@ -107,6 +85,7 @@ const nextSearchState =
  * @param initial - Initial state
  * @returns First path found to a state matching the predicate, or `undefined` if no such path exists.
  */
+
 export const generalizedSearch = <TState>(
   better: (oldState: TState[], newState: TState[]) => boolean,
   next: (state: TState) => TState[],
@@ -114,16 +93,20 @@ export const generalizedSearch = <TState>(
   initial: TState
 ): TState[] | undefined => {
   const initialKey = toString(initial);
-  const initialState: SearchState<TState> = {
-    current: initial,
-    paths: new Map([[initialKey, []]]),
+  const initialSearchState: SearchState<TState> = {
+    paths: { [initialKey]: [] },
     queue: [],
-    visited: new Set([initialKey])
+    state: initial,
+    visited: [initialKey]
   };
 
-  const end = findIterate(nextSearchState(better, next), (a: SearchState<TState>) => found(a.current), initialState);
+  const end = findIterate(
+    nextSearchState(better, next),
+    (a: SearchState<TState>) => found(a.state),
+    initialSearchState
+  );
 
-  const getSteps = (searchState: SearchState<TState> | null) => searchState?.paths.get(toString(searchState.current));
+  const getSteps = (searchState: SearchState<TState> | null) => searchState?.paths[toString(searchState.state)];
 
   return getSteps(end)?.reverse();
 };

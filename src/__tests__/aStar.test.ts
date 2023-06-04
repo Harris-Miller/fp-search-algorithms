@@ -19,7 +19,7 @@ const heightMap: Record<string, number> = {
 };
 
 // @ts-expect-error
-const hills = readFileSync(new URL('./sample.txt', import.meta.url), { encoding: 'utf8' });
+const hills = readFileSync(new URL('./hills.txt', import.meta.url), { encoding: 'utf8' });
 
 const createGrid = (data: string) => {
   const rows = data.split('\n');
@@ -70,6 +70,6 @@ describe('aStar', () => {
 
     const steps = snd(r).length;
 
-    expect(steps).toBe(31);
+    expect(steps).toBe(412);
   });
 });

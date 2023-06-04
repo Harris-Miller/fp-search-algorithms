@@ -1,4 +1,6 @@
-import { fst, isNil, last, snd } from './fp';
+import { isNil, last } from 'ramda';
+
+import { fst, snd } from './fp';
 import { generalizedSearch } from './generalizedSearch';
 import { leastCostly } from './utility';
 
@@ -38,13 +40,7 @@ export const aStarAssoc = <TState>(
     return [fst(snd(last(packedStates)!)), packedStates.map(x => snd(snd(x)))];
   };
 
-  const r = generalizedSearch<[number, [number, TState]], TState>(
-    x => snd(snd(x)),
-    leastCostly,
-    nextAssoc,
-    x => found(snd(snd(x))),
-    [remaining(initial), [0, initial]]
-  );
+  const r = generalizedSearch(leastCostly, nextAssoc, x => found(snd(snd(x))), [remaining(initial), [0, initial]]);
 
   return unpack(r);
 };

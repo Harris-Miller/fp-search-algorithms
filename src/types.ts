@@ -2,9 +2,9 @@
  * Internal type used to manage search state
  * @private
  */
-export type SearchState<TState, TKey> = {
+export type SearchState<TState> = {
   current: TState;
-  paths: Map<TKey, TState[]>;
+  paths: Map<string, TState[]>;
   queue: TState[];
-  visited: Set<TKey>;
+  visited: Set<string>;
 };

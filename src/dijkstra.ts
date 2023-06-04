@@ -1,4 +1,6 @@
-import { fst, isNil, last, snd } from './fp';
+import { isNil, last } from 'ramda';
+
+import { fst, snd } from './fp';
 import { generalizedSearch } from './generalizedSearch';
 import { leastCostly } from './utility';
 
@@ -33,10 +35,7 @@ export const dijkstraAssoc = <TState>(
   const nextSt = ([oldCost, st]: [number, TState]) =>
     next(st).map<[number, TState]>(([newSt, newCost]) => [newCost + oldCost, newSt]);
 
-  const r = generalizedSearch<[number, TState], TState>(snd, leastCostly, nextSt, state => found(snd(state)), [
-    0,
-    initial
-  ]);
+  const r = generalizedSearch(leastCostly, nextSt, state => found(snd(state)), [0, initial]);
   return unpack(r);
 };
 

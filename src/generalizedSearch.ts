@@ -1,4 +1,5 @@
-import { isNil } from './fp';
+import { isNil, toString } from 'ramda';
+
 import type { SearchState } from './types';
 
 /**
@@ -16,24 +17,20 @@ const findIterate = <T>(next: (a: T) => T | undefined, found: (a: T) => boolean,
  * @private
  */
 const nextSearchState =
-  <TState, TKey>(
-    better: (as: TState[], bs: TState[]) => boolean,
-    makeKey: (state: TState) => TKey,
-    next: (state: TState) => TState[]
-  ) =>
-  (oldState: SearchState<TState, TKey>): SearchState<TState, TKey> | undefined => {
+  <TState>(better: (as: TState[], bs: TState[]) => boolean, next: (state: TState) => TState[]) =>
+  (oldState: SearchState<TState>): SearchState<TState> | undefined => {
     const updateQueuePaths = (
-      [oldQueue, oldPaths]: [TState[], Map<TKey, TState[]>],
+      [oldQueue, oldPaths]: [TState[], Map<string, TState[]>],
       st: TState
-    ): [TState[], Map<TKey, TState[]>] => {
-      if (oldState.visited.has(makeKey(st))) return [oldQueue, oldPaths];
+    ): [TState[], Map<string, TState[]>] => {
+      if (oldState.visited.has(toString(st))) return [oldQueue, oldPaths];
 
-      const stepsSoFar = oldState.paths.get(makeKey(oldState.current))!;
+      const stepsSoFar = oldState.paths.get(toString(oldState.current))!;
 
       const nextQueue = [...oldQueue, st];
-      const nextPaths = oldPaths.set(makeKey(st), [st, ...stepsSoFar]);
+      const nextPaths = oldPaths.set(toString(st), [st, ...stepsSoFar]);
 
-      const oldPath = oldPaths.get(makeKey(st));
+      const oldPath = oldPaths.get(toString(st));
 
       if (!oldPath) return [nextQueue, nextPaths];
 
@@ -46,16 +43,14 @@ const nextSearchState =
     if (!newQueue.length) return undefined;
 
     const [newCurrent, ...remainingQueue] = newQueue;
-    const newState: SearchState<TState, TKey> = {
+    const newState: SearchState<TState> = {
       current: newCurrent,
       paths: newPaths,
       queue: remainingQueue,
-      visited: oldState.visited.add(makeKey(newCurrent))
+      visited: oldState.visited.add(toString(newCurrent))
     };
 
-    return oldState.visited.has(makeKey(newState.current))
-      ? nextSearchState(better, makeKey, next)(newState)
-      : newState;
+    return oldState.visited.has(toString(newState.current)) ? nextSearchState(better, next)(newState) : newState;
   };
 
 /**
@@ -66,36 +61,29 @@ const nextSearchState =
  * into each separate implementation.
  *
  * @public
- * @param makeKey - Function to turn a @state@ into a key by which states will be compared when determining whether a state has be enqueued and / or visited
  * @param better - Function which when given a choice between an `oldPath` and `newPath` to a state, returns `true` when `newPath` is a "better" path than `oldPath` and should thus be inserted
  * @param next - Function to generate "next" states given a current state
  * @param found - Predicate to determine if solution found. `generalizedSearch` returns a path to the first state for which this predicate returns `true`.
  * @param initial - Initial state
  * @returns First path found to a state matching the predicate, or `undefined` if no such path exists.
  */
-export const generalizedSearch = <TState, TKey>(
-  makeKey: (state: TState) => TKey,
+export const generalizedSearch = <TState>(
   better: (oldState: TState[], newState: TState[]) => boolean,
   next: (state: TState) => TState[],
   found: (state: TState) => boolean,
   initial: TState
 ): TState[] | undefined => {
-  const initialKey = makeKey(initial);
-  const initialState: SearchState<TState, TKey> = {
+  const initialKey = toString(initial);
+  const initialState: SearchState<TState> = {
     current: initial,
     paths: new Map([[initialKey, []]]),
     queue: [],
     visited: new Set([initialKey])
   };
 
-  const end = findIterate(
-    nextSearchState(better, makeKey, next),
-    (a: SearchState<TState, TKey>) => found(a.current),
-    initialState
-  );
+  const end = findIterate(nextSearchState(better, next), (a: SearchState<TState>) => found(a.current), initialState);
 
-  const getSteps = (searchState: SearchState<TState, TKey> | null) =>
-    searchState?.paths.get(makeKey(searchState.current));
+  const getSteps = (searchState: SearchState<TState> | null) => searchState?.paths.get(toString(searchState.current));
 
   return getSteps(end)?.reverse();
 };

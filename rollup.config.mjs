@@ -1,6 +1,9 @@
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 
+/** @type {import('rollup').RollupOptions} */
 export default {
+  external: /node_modules/,
   input: 'src/index.ts',
   output: [
     {
@@ -12,5 +15,5 @@ export default {
       format: 'cjs'
     }
   ],
-  plugins: [typescript()]
+  plugins: [nodeResolve(), typescript()]
 };

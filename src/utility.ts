@@ -1,4 +1,5 @@
-import { isNil, tail, zipWith } from './fp';
+import { isNil, tail, toString, zipWith } from 'ramda';
+
 import type { SearchState } from './types';
 
 /**
@@ -13,24 +14,20 @@ import type { SearchState } from './types';
  * @returns
  */
 export const nextSearchState =
-  <TState, TKey>(
-    better: (as: TState[], bs: TState[]) => boolean,
-    makeKey: (state: TState) => TKey,
-    next: (state: TState) => TState[]
-  ) =>
-  (oldState: SearchState<TState, TKey>): SearchState<TState, TKey> | undefined => {
+  <TState>(better: (as: TState[], bs: TState[]) => boolean, next: (state: TState) => TState[]) =>
+  (oldState: SearchState<TState>): SearchState<TState> | undefined => {
     const updateQueuePaths = (
-      [oldQueue, oldPaths]: [TState[], Map<TKey, TState[]>],
+      [oldQueue, oldPaths]: [TState[], Map<string, TState[]>],
       st: TState
-    ): [TState[], Map<TKey, TState[]>] => {
-      if (oldState.visited.has(makeKey(st))) return [oldQueue, oldPaths];
+    ): [TState[], Map<string, TState[]>] => {
+      if (oldState.visited.has(toString(st))) return [oldQueue, oldPaths];
 
-      const stepsSoFar = oldState.paths.get(makeKey(oldState.current))!;
+      const stepsSoFar = oldState.paths.get(toString(oldState.current))!;
 
       const nextQueue = [...oldQueue, st];
-      const nextPaths = oldPaths.set(makeKey(st), [st, ...stepsSoFar]);
+      const nextPaths = oldPaths.set(toString(st), [st, ...stepsSoFar]);
 
-      const oldPath = oldPaths.get(makeKey(st));
+      const oldPath = oldPaths.get(toString(st));
 
       if (!oldPath) return [nextQueue, nextPaths];
 
@@ -43,16 +40,14 @@ export const nextSearchState =
     if (!newQueue.length) return undefined;
 
     const [newCurrent, ...remainingQueue] = newQueue;
-    const newState: SearchState<TState, TKey> = {
+    const newState: SearchState<TState> = {
       current: newCurrent,
       paths: newPaths,
       queue: remainingQueue,
-      visited: oldState.visited.add(makeKey(newCurrent))
+      visited: oldState.visited.add(toString(newCurrent))
     };
 
-    return oldState.visited.has(makeKey(newState.current))
-      ? nextSearchState(better, makeKey, next)(newState)
-      : newState;
+    return oldState.visited.has(toString(newState.current)) ? nextSearchState(better, next)(newState) : newState;
   };
 
 /**

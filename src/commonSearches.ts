@@ -1,4 +1,3 @@
-import { identity } from './fp';
 import { generalizedSearch } from './generalizedSearch';
 
 /**
@@ -17,7 +16,7 @@ export const bfs = <TState>(
   next: (state: TState) => TState[],
   found: (state: TState) => boolean,
   initial: TState
-): TState[] | undefined => generalizedSearch(identity, () => false, next, found, initial);
+): TState[] | undefined => generalizedSearch(() => false, next, found, initial);
 
 /**
  * Performs a depth-first search over a set
@@ -35,4 +34,4 @@ export const dfs = <TState>(
   next: (state: TState) => TState[],
   found: (state: TState) => boolean,
   initial: TState
-): TState[] | undefined => generalizedSearch(identity, () => true, next, found, initial);
+): TState[] | undefined => generalizedSearch(() => true, next, found, initial);

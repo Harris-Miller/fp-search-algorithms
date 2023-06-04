@@ -20,20 +20,20 @@ import { leastCostly } from './utility';
  * @param initial - Initial state
  * @returns [Total cost, list of steps] for the first path found which satisfies the given predicate
  */
-export const aStarAssoc = <TState>(
-  next: (state: TState) => [TState, number][],
-  remaining: (state: TState) => number,
-  found: (state: TState) => boolean,
-  initial: TState
-): [number, TState[]] | undefined => {
-  const nextAssoc = ([_, [oldCost, oldSt]]: [number, [number, TState]]) =>
-    next(oldSt).map<[number, [number, TState]]>(([newSt, cost]: [TState, number]) => {
+export const aStarAssoc = <T>(
+  next: (state: T) => [T, number][],
+  remaining: (state: T) => number,
+  found: (state: T) => boolean,
+  initial: T
+): [number, T[]] | undefined => {
+  const nextAssoc = ([_, [oldCost, oldSt]]: [number, [number, T]]) =>
+    next(oldSt).map<[number, [number, T]]>(([newSt, cost]: [T, number]) => {
       const newCost = oldCost + cost;
       const newEst = newCost + remaining(newSt);
       return [newEst, [newCost, newSt]];
     });
 
-  const unpack = (packedStates: [number, [number, TState]][] | undefined): [number, TState[]] | undefined => {
+  const unpack = (packedStates: [number, [number, T]][] | undefined): [number, T[]] | undefined => {
     if (isNil(packedStates)) return packedStates;
     if (!packedStates.length) return [0, []];
     // (fst . snd . last $ packed_states, map snd2 packed_states)
@@ -62,14 +62,14 @@ export const aStarAssoc = <TState>(
  * @param initial - Initial state
  * @returns - [Total cost, list of steps] for the first path found which satisfies the given predicate
  */
-export const aStar = <TState>(
-  next: (state: TState) => TState[],
-  cost: (stA: TState, stB: TState) => number,
-  remaining: (state: TState) => number,
-  found: (state: TState) => boolean,
-  initial: TState
-): [number, TState[]] | undefined => {
+export const aStar = <T>(
+  next: (state: T) => T[],
+  cost: (stA: T, stB: T) => number,
+  remaining: (state: T) => number,
+  found: (state: T) => boolean,
+  initial: T
+): [number, T[]] | undefined => {
   // create assocNext out of `next` and `cost`
-  const nextAssoc = (st: TState) => next(st).map<[TState, number]>(newSt => [newSt, cost(st, newSt)]);
+  const nextAssoc = (st: T) => next(st).map<[T, number]>(newSt => [newSt, cost(st, newSt)]);
   return aStarAssoc(nextAssoc, remaining, found, initial);
 };

@@ -21,19 +21,19 @@ import { leastCostly } from './utility';
  * @param initial - Initial state
  * @returns [Total cost, list of steps] for the first path found which satisfies the given predicate
  */
-export const dijkstraAssoc = <TState>(
-  next: (state: TState) => [TState, number][],
-  found: (state: TState) => boolean,
-  initial: TState
-): [number, TState[]] | undefined => {
-  const unpack = (packedStates: [number, TState][] | undefined): [number, TState[]] | undefined => {
+export const dijkstraAssoc = <T>(
+  next: (state: T) => [T, number][],
+  found: (state: T) => boolean,
+  initial: T
+): [number, T[]] | undefined => {
+  const unpack = (packedStates: [number, T][] | undefined): [number, T[]] | undefined => {
     if (isNil(packedStates)) return packedStates;
     if (!packedStates.length) return [0, []];
     return [fst(last(packedStates)!), packedStates.map(x => x[1])];
   };
 
-  const nextSt = ([oldCost, st]: [number, TState]) =>
-    next(st).map<[number, TState]>(([newSt, newCost]) => [newCost + oldCost, newSt]);
+  const nextSt = ([oldCost, st]: [number, T]) =>
+    next(st).map<[number, T]>(([newSt, newCost]) => [newCost + oldCost, newSt]);
 
   const r = generalizedSearch(leastCostly, nextSt, state => found(snd(state)), [0, initial]);
   return unpack(r);
@@ -54,13 +54,13 @@ export const dijkstraAssoc = <TState>(
  * @param initial
  * @returns
  */
-export const dijkstra = <TState>(
-  next: (state: TState) => TState[],
-  cost: (stA: TState, stB: TState) => number,
-  found: (state: TState) => boolean,
-  initial: TState
-): [number, TState[]] | undefined => {
+export const dijkstra = <T>(
+  next: (state: T) => T[],
+  cost: (stA: T, stB: T) => number,
+  found: (state: T) => boolean,
+  initial: T
+): [number, T[]] | undefined => {
   // create assocNext out of `next` and `cost`
-  const nextAssoc = (st: TState) => next(st).map<[TState, number]>(newSt => [newSt, cost(st, newSt)]);
+  const nextAssoc = (st: T) => next(st).map<[T, number]>(newSt => [newSt, cost(st, newSt)]);
   return dijkstraAssoc(nextAssoc, found, initial);
 };

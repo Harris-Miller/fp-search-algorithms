@@ -46,7 +46,6 @@ const createVertices =
       .map(({ x: nX, y: nY }) => grid.find(({ x: gX, y: gY }) => gX === nX && gY === nY))
       .filter(isNotNil);
 
-    // console.log('neighbors', neighbors);
     const canMoveTo = (pt1: Point, pt2: Point) => pt2.height - pt1.height < 2;
     return neighbors.filter((neighbor: Point) => canMoveTo(point, neighbor));
   };
@@ -68,8 +67,6 @@ describe('aStar', () => {
       state => state === end,
       start
     )!;
-
-    // console.log(r);
 
     const steps = snd(r).length;
 

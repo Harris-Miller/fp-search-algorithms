@@ -12,6 +12,46 @@ const findIterate = <T>(next: (a: T) => T | undefined, found: (a: T) => boolean,
   return findIterate(next, found, next(initial));
 };
 
+// const nextSearchState2 =
+//   <T>(better: (as: T[], bs: T[]) => boolean) =>
+//   (next: (st: T) => T[]) =>
+//   (initial: T): T | undefined => {
+//     const state = initial;
+//     const initialKey = toString(initial);
+//     const paths: Record<string, T[]> = { [initialKey]: [] };
+//     const queue = [];
+//     const visited = [initialKey];
+
+//     const updateQueuePaths2 = (
+//       { queue: oldQueue, paths: oldPaths }: { paths: Record<string, T[]>; queue: T[] },
+//       nextState: T
+//     ): { paths: Record<string, T[]>; queue: T[] } => {
+//       const nextStateKey = toString(nextState);
+
+//       if (visited.includes(nextStateKey)) return { paths: oldPaths, queue: oldQueue };
+
+//       const stepsSoFar = paths[toString(state)];
+
+//       const nextQueue = [...oldQueue, nextState];
+//       const nextPaths = { ...paths, [nextStateKey]: [nextState, ...stepsSoFar] };
+
+//       const oldPath = paths[nextStateKey];
+
+//       if (!oldPath) return { paths: nextPaths, queue: nextQueue };
+
+//       return better(oldPath, [nextState, ...stepsSoFar]) ? { paths: nextPaths, queue: nextQueue } : { paths: nextPaths, queue: oldQueue };
+
+//       // console.log('isBetter', isBetter);
+
+//       return isBetter;
+//     };
+
+//     // eslint-disable-next-line no-constant-condition
+//     while (true) {
+//       ({ paths, queue }) = next(state).reduce(updateQueuePaths2(state), { paths, queue });
+//     }
+//   };
+
 /**
  * Moves from one @searchState@ to the next in the generalized search algorithm
  * @private
@@ -28,13 +68,13 @@ const nextSearchState =
       const stepsSoFar = oldState.paths.get(toString(oldState.current))!;
 
       const nextQueue = [...oldQueue, st];
-      const nextPaths = oldPaths.set(toString(st), [st, ...stepsSoFar]);
+      const nextPaths = new Map<string, TState[]>(oldPaths).set(toString(st), [st, ...stepsSoFar]);
 
       const oldPath = oldPaths.get(toString(st));
 
       if (!oldPath) return [nextQueue, nextPaths];
 
-      return better(oldPath, [st, ...stepsSoFar]) ? [nextQueue, nextPaths] : [oldQueue, nextPaths];
+      return better(oldPath, [st, ...stepsSoFar]) ? [nextQueue, nextPaths] : [oldQueue, oldPaths];
     };
 
     const newQueuePaths = next(oldState.current).reduce(updateQueuePaths, [oldState.queue, oldState.paths]);
@@ -47,7 +87,7 @@ const nextSearchState =
       current: newCurrent,
       paths: newPaths,
       queue: remainingQueue,
-      visited: oldState.visited.add(toString(newCurrent))
+      visited: new Set<string>(oldState.visited).add(toString(newCurrent))
     };
 
     return oldState.visited.has(toString(newState.current)) ? nextSearchState(better, next)(newState) : newState;

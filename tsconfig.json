@@ -1,11 +1,28 @@
 {
-  "extends": "@tsconfig/node18/tsconfig.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
+    "outDir": "node_modules/.cache/tsc",
+    "composite": true,
+    "lib": [
+      "esnext"
+    ],
+    "module": "NodeNext",
+    "target": "esnext",
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
     "declaration": true,
-    "declarationDir": "dist",
     "isolatedModules": true
   },
-  "include": [
-    "src"
+  "include": [],
+  "exclude": [],
+  "references": [
+    {
+      "path": "tsconfig.lib.json"
+    },
+    {
+      "path": "tsconfig.spec.json"
+    }
   ]
 }

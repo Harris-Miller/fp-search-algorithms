@@ -15,5 +15,13 @@ export default {
       format: 'cjs'
     }
   ],
-  plugins: [nodeResolve(), typescript()]
+  plugins: [
+    nodeResolve(),
+    typescript({
+      composite: false,
+      outDir: 'dist',
+      rootDir: 'src',
+      tsconfig: 'tsconfig.lib.json'
+    })
+  ]
 };

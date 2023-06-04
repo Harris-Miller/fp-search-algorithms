@@ -7,6 +7,12 @@
       "files": [
         "*.ts"
       ],
+      "parserOptions": {
+        "project": [
+          "tsconfig.lib.json",
+          "tsconfig.spec.json"
+        ]
+      },
       "rules": {
         "@typescript-eslint/no-non-null-assertion": "off"
       }

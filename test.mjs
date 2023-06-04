@@ -1,4 +1,4 @@
-import { indexBy, isNotNil, toString } from 'ramda';
+import { indexBy, init, isNotNil, toString } from 'ramda';
 
 import { readFileSync } from 'node:fs';
 
@@ -7,6 +7,7 @@ import { aStar } from './dist/index.cjs.js';
 
 export const snd = tuple => tuple[1];
 
+/** @type {Record<string, number>} */
 const heightMap = {
   ...'abcdefghijklmnopqrstuvwxyz'.split('').reduce((acc, v, i) => ({ ...acc, [v]: i + 1 }), {}),
   E: 26,
@@ -38,12 +39,13 @@ const makeNext = (xMax, yMax, gridKeyMap) => point => {
     { x: x + 1, y },
     { x, y: y - 1 },
     { x, y: y + 1 }
-  ].map(toString);
+  ]
+    .filter(isInBounds(xMax, yMax))
+    .map(toString);
 
   const r = neighborKeys
     .map(k => gridKeyMap[k])
     .filter(isNotNil)
-    .filter(isInBounds(xMax, yMax))
     .filter(canMoveTo(point));
 
   // console.log(r);
@@ -53,9 +55,7 @@ const makeNext = (xMax, yMax, gridKeyMap) => point => {
 
 const rows = data.split('\n');
 
-const grid = createGrid(rows);
-
-// console.log(grid);
+const grid = createGrid(init(rows));
 
 const start = grid.find(({ letter }) => letter === 'S');
 const end = grid.find(({ letter }) => letter === 'E');
@@ -64,7 +64,7 @@ const gridKeyMap = indexBy(({ x, y }) => toString({ x, y }), grid);
 
 // console.log(gridKeyMap);
 
-const xMax = rows.length - 1;
+const xMax = rows.length - 2;
 const yMax = rows[0].length - 1;
 
 const r = aStar(

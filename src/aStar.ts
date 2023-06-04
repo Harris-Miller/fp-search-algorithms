@@ -4,6 +4,13 @@ import { fst, snd } from './fp';
 import { generalizedSearch } from './generalizedSearch';
 import { leastCostly } from './utility';
 
+const unpack = <T>(packedStates: [number, [number, T]][] | null): [number, T[]] | null => {
+  if (isNil(packedStates)) return null;
+  if (!packedStates.length) return [0, []];
+  // (fst . snd . last $ packed_states, map snd2 packed_states)
+  return [fst(snd(last(packedStates)!)), packedStates.map(x => snd(snd(x)))];
+};
+
 /**
  * Performs a best-first search
  * using the A* search algorithm, starting with the state @initial@, generating
@@ -33,16 +40,8 @@ export const aStarAssoc = <T>(
       return [newEst, [newCost, newSt]];
     });
 
-  const unpack = (packedStates: [number, [number, T]][] | null): [number, T[]] | null => {
-    if (isNil(packedStates)) return null;
-    if (!packedStates.length) return [0, []];
-    // (fst . snd . last $ packed_states, map snd2 packed_states)
-    return [fst(snd(last(packedStates)!)), packedStates.map(x => snd(snd(x)))];
-  };
-
-  const r = generalizedSearch(leastCostly, nextAssoc, x => found(snd(snd(x))), [remaining(initial), [0, initial]]);
-
-  return unpack(r);
+  const result = generalizedSearch(leastCostly, nextAssoc, x => found(snd(snd(x))), [remaining(initial), [0, initial]]);
+  return unpack(result);
 };
 
 /**

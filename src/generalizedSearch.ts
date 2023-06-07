@@ -1,4 +1,4 @@
-import { isNil, toString } from 'ramda';
+import { isEmpty, isNil, toString } from 'ramda';
 
 /**
  * Internal type used to manage search state
@@ -29,6 +29,13 @@ const findIterate = <T>(
   }
 };
 
+const pop = <T>(map: Record<string, T[]>): [[string, T], Record<string, T[]>] | null => {
+  if (isEmpty(map)) return null;
+  
+
+  return null;
+};
+
 /**
  * Moves from one @searchState@ to the next in the generalized search algorithm
  * @private
@@ -43,13 +50,14 @@ const nextSearchState =
 
       const stepsSoFar = current.paths[toString(current.state)];
       const nextQueue = [st, ...queue];
-      const nextPaths = { ...paths, [toString(st)]: [st, ...stepsSoFar] };
+      const nextStepsSoFar = [st, ...stepsSoFar];
+      const nextPaths = { ...paths, [toString(st)]: nextStepsSoFar };
 
       const path: T[] = paths[toString(st)];
 
       if (isNil(path)) return [nextQueue, nextPaths];
 
-      return better(path, [st, ...stepsSoFar]) ? [nextQueue, nextPaths] : [queue, paths];
+      return better(path, nextStepsSoFar) ? [nextQueue, nextPaths] : [queue, paths];
     };
 
     // eslint-disable-next-line no-constant-condition
@@ -65,6 +73,17 @@ const nextSearchState =
         state: newState,
         visited: [toString(newState), ...current.visited]
       };
+
+      // console.log(newState);
+      // console.log(newCurrent.queue);
+      const tuples = newCurrent.queue.map(xs => {
+        // @ts-expect-error
+        const st = xs[1][1];
+        return `(${st.height},(${st.x},${st.y}))`;
+      });
+      // @ts-expect-error
+      const thing = `Just fromList [(${newCurrent.queue[0][0]},[${tuples}])]`;
+      console.log(thing);
 
       if (!current.visited.includes(toString(newState))) return newCurrent;
 

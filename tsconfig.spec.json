@@ -6,6 +6,7 @@
     ]
   },
   "include": [
+    "test.ts",
     "vite.config.ts",
     "src/**/*.test.*"
   ],

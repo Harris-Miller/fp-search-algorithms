@@ -6,7 +6,7 @@
     "lib": [
       "esnext"
     ],
-    "module": "NodeNext",
+    "module": "CommonJS",
     "target": "esnext",
     "strict": true,
     "skipLibCheck": true,

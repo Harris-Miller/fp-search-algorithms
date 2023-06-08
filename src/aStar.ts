@@ -1,8 +1,7 @@
 import { isNil, last } from 'ramda';
 
-import { fst, snd } from './fp';
+import { fst, leastCostly, snd } from './common';
 import { generalizedSearch } from './generalizedSearch';
-import { leastCostly } from './utility';
 
 const unpack = <T>(packedStates: [number, [number, T]][] | null): [number, T[]] | null => {
   if (isNil(packedStates)) return null;

@@ -3,7 +3,7 @@ import { indexBy, isNotNil, toString } from 'ramda';
 import { readFileSync } from 'node:fs';
 
 import { aStar } from '../aStar';
-import { snd } from '../fp';
+import { snd } from '../common';
 
 type Point = {
   height: number;

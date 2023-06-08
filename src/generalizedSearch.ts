@@ -31,8 +31,6 @@ const findIterate = <T>(
 
 const pop = <T>(map: Record<string, T[]>): [[string, T], Record<string, T[]>] | null => {
   if (isEmpty(map)) return null;
-  
-
   return null;
 };
 

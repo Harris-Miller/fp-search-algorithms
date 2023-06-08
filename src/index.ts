@@ -1,5 +1,5 @@
 export * from './aStar';
-export * from './commonSearches';
+export * from './bfs';
+export * from './dfs';
 export * from './dijkstra';
-export * from './generalizedSearch';
-export { incrementalCost, pruning } from './utility';
+export * from './utility';

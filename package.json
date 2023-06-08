@@ -8,6 +8,38 @@
   "main": "dist/index.cjs.js",
   "module": "dist/index.ems.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./aStar": {
+      "import": "./dist/aStar.mjs",
+      "require": "./dist/aStar.js",
+      "types": "./dist/types/aStar.d.ts"
+    },
+    "./bfs": {
+      "import": "./dist/bfs.mjs",
+      "require": "./dist/bfs.js",
+      "types": "./dist/types/bfs.d.ts"
+    },
+    "./dfs": {
+      "import": "./dist/dfs.mjs",
+      "require": "./dist/dfs.js",
+      "types": "./dist/types/dfs.d.ts"
+    },
+    "./dijkstra": {
+      "import": "./dist/dijkstra.mjs",
+      "require": "./dist/dijkstra.js",
+      "types": "./dist/types/dijkstra.d.ts"
+    },
+    "./utility": {
+      "import": "./dist/utility.mjs",
+      "require": "./dist/utility.js",
+      "types": "./dist/types/utility.d.ts"
+    }
+  },
   "files": [
     "dist"
   ],

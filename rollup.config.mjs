@@ -1,20 +1,32 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 
+/** @type {(format: 'esm' | 'cjs') => import('rollup').OutputOptions} */
+const output = format => {
+  const extension = format === 'esm' ? '.mjs' : '.js';
+  return {
+    chunkFileNames: `[name]${extension}`,
+    dir: './dist',
+    entryFileNames: `[name]${extension}`,
+    esModule: format !== 'esm',
+    exports: 'named',
+    format,
+    sourcemap: true
+  };
+};
+
 /** @type {import('rollup').RollupOptions} */
 export default {
   external: /node_modules/,
-  input: 'src/index.ts',
-  output: [
-    {
-      file: 'dist/index.esm.js',
-      format: 'esm'
-    },
-    {
-      file: 'dist/index.cjs.js',
-      format: 'cjs'
-    }
-  ],
+  input: {
+    aStar: 'src/aStar.ts',
+    bfs: 'src/bfs.ts',
+    dfs: 'src/dfs.ts',
+    dijkstra: 'src/dijkstra.ts',
+    index: 'src/index.ts',
+    utility: 'src/utility.ts'
+  },
+  output: [output('esm'), output('cjs')],
   plugins: [
     nodeResolve(),
     typescript({

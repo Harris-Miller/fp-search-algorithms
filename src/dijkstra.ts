@@ -1,6 +1,6 @@
-import { isNil, last } from 'ramda';
+import { isNil, last, toString } from 'ramda';
 
-import { fst, leastCostly, snd } from './common';
+import { fst, leastCostly, lifoHeap, snd } from './common';
 import { generalizedSearch } from './generalizedSearch';
 
 /**
@@ -24,17 +24,24 @@ export const dijkstraAssoc = <TState>(
   next: (state: TState) => [TState, number][],
   found: (state: TState) => boolean,
   initial: TState
-): [number, TState[]] | null => {
-  const unpack = (packedStates: [number, TState][] | null): [number, TState[]] | null => {
+): [number, TState[]] | undefined => {
+  const unpack = (packedStates: [number, TState][] | undefined): [number, TState[]] | undefined => {
     if (isNil(packedStates)) return packedStates;
     if (!packedStates.length) return [0, []];
-    return [fst(last(packedStates)!), packedStates.map(x => x[1])];
+    return [fst(last(packedStates)!), packedStates.map(snd)];
   };
 
   const nextSt = ([oldCost, st]: [number, TState]) =>
     next(st).map<[number, TState]>(([newSt, newCost]) => [newCost + oldCost, newSt]);
 
-  const r = generalizedSearch(leastCostly, nextSt, state => found(snd(state)), [0, initial]);
+  const r = generalizedSearch(
+    lifoHeap<TState>(),
+    state => toString(snd(state)),
+    leastCostly,
+    nextSt,
+    state => found(snd(state)),
+    [0, initial]
+  );
   return unpack(r);
 };
 
@@ -58,7 +65,7 @@ export const dijkstra = <T>(
   cost: (stA: T, stB: T) => number,
   found: (state: T) => boolean,
   initial: T
-): [number, T[]] | null => {
+): [number, T[]] | undefined => {
   // create assocNext out of `next` and `cost`
   const nextAssoc = (st: T) => next(st).map<[T, number]>(newSt => [newSt, cost(st, newSt)]);
   return dijkstraAssoc(nextAssoc, found, initial);

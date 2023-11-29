@@ -1,3 +1,5 @@
+import { toString } from 'ramda';
+
 import { generalizedSearch } from './generalizedSearch';
 
 /**
@@ -12,5 +14,5 @@ import { generalizedSearch } from './generalizedSearch';
  * @param initial - Initial state
  * @returns First path found to a state matching the predicate, or `null` if no such path exists.
  */
-export const dfs = <T>(next: (state: T) => T[], found: (state: T) => boolean, initial: T): T[] | null =>
-  generalizedSearch(() => true, next, found, initial);
+export const dfs = <T>(next: (state: T) => T[], found: (state: T) => boolean, initial: T): T[] | undefined =>
+  generalizedSearch([], toString, () => true, next, found, initial);

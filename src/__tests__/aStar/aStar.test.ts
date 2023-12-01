@@ -2,8 +2,9 @@ import { indexBy, isNotNil, toString } from 'ramda';
 
 import { readFileSync } from 'node:fs';
 
-import { aStar } from '../aStar';
-import { snd } from '../common';
+import { aStar } from '../../aStar';
+import { aStar as aStarPure } from '../../aStarPure';
+import { snd } from '../../common';
 
 type Point = {
   height: number;
@@ -19,7 +20,7 @@ const heightMap: Record<string, number> = {
 };
 
 // @ts-expect-error
-const hills = readFileSync(new URL('./hills.txt', import.meta.url), { encoding: 'utf8' });
+const hills = readFileSync(new URL('./sample.txt', import.meta.url), { encoding: 'utf8' });
 
 const createGrid = (data: string) => {
   const rows = data.split('\n');
@@ -27,10 +28,7 @@ const createGrid = (data: string) => {
   return rows.flatMap((row, i) => row.split('').map((v, j) => ({ height: heightMap[v], letter: v, x: i, y: j })));
 };
 
-const heuristic =
-  ({ x: xA, y: yA }: Point) =>
-  ({ x: xB, y: yB }: Point) =>
-    Math.abs(xA - xB) + Math.abs(yA - yB);
+const heuristic = (a: Point) => (b: Point) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 
 const canMoveTo = (pt1: Point, pt2: Point) => pt2.height - pt1.height < 2;
 
@@ -68,6 +66,18 @@ describe('aStar', () => {
       state => state === end,
       start
     )!;
+
+    console.log(r);
+
+    const r2 = aStarPure(
+      makeNext(gridKeyMap),
+      () => 1,
+      heuristic(end),
+      state => state === end,
+      start
+    );
+
+    console.log(r2);
 
     const steps = snd(r).length;
 

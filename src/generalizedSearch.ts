@@ -40,7 +40,8 @@ const nextSearchState =
       // ps' = Map.insert (mk_key st) (st : steps_so_far) old_paths
       queue.push(st);
       paths.set(key, nextSteps);
-      return [queue, paths] as [SearchContainer<T>, Map<string, T[]>];
+      const newPath = new Map(paths).set(key, nextSteps);
+      return [queue, newPath] as [SearchContainer<T>, Map<string, T[]>];
     };
 
     const [newQueue, newPaths] = next(old.current).reduce<[SearchContainer<T>, Map<string, T[]>]>(updateQueuePaths, [

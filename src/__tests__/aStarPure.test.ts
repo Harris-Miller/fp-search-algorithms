@@ -18,11 +18,10 @@ const heightMap: Record<string, number> = {
   S: 1
 };
 
-const hills = readFileSync(path.resolve(__dirname, './aStar/hills.txt'), { encoding: 'utf8' });
+const hills = readFileSync(path.resolve(__dirname, './aStar/sample.txt'), { encoding: 'utf8' });
 
-const createGrid = (data: string) => {
+const createGrid = (data: string): Point[] => {
   const rows = data.split('\n');
-
   return rows.flatMap((row, i) => row.split('').map((v, j) => ({ height: heightMap[v], letter: v, x: i, y: j })));
 };
 
@@ -63,4 +62,5 @@ const r = aStar(
   start
 );
 
+console.log(r);
 console.log(r?.length);

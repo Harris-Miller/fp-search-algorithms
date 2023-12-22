@@ -1,4 +1,4 @@
-import type { Container } from './common';
+import type { Container } from './utils/common';
 
 /**
  * Internal type used to manage search state

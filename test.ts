@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { aStar } from './src/aStar/aStar';
-import { snd } from './src/common';
+import { snd } from './src/utils/common';
 
 type Point = {
   height: number;

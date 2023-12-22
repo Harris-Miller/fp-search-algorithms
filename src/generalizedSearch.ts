@@ -1,7 +1,7 @@
 /* eslint-disable no-continue */
 import { isNil, isNotNil, minBy } from 'ramda';
 
-import type { Container } from './common';
+import type { Container } from './utils/common';
 // import { snd } from './common';
 
 // const reconstructPath = <T>(cameFrom: Map<T, T>, start: T) => {

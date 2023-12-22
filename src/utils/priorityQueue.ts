@@ -1,10 +1,11 @@
 import { isNotNil } from 'ramda';
 
-/* eslint-disable no-bitwise */
 const top = 0;
+/* eslint-disable no-bitwise */
 const parent = (i: number) => ((i + 1) >>> 1) - 1;
-const left = (i: number) => (i << 1) + 1;
-const right = (i: number) => (i + 1) << 1;
+const left = (i: number) => (i << 1) + 1; // double - 1
+const right = (i: number) => (i + 1) << 1; // double + 2
+/* eslint-enable no-bitwise */
 
 export const priorityQueue = <T>(comparator: (a: T, b: T) => boolean) => {
   const heap: T[] = [];

@@ -1,15 +1,5 @@
+import { createPath } from '../utils/common';
 import { priorityQueue } from '../utils/priorityQueue';
-
-/** @internal */
-const createPath = <T>(prevMap: Map<T, T>, final: T) => {
-  const path: T[] = [final];
-  let prev = prevMap.get(final);
-  while (prev) {
-    path.push(prev);
-    prev = prevMap.get(prev);
-  }
-  return path.reverse();
-};
 
 /**
  * This API to Dijkstra's algorithm is useful in the common case when next

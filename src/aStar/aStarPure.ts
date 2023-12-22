@@ -1,23 +1,5 @@
-import { minBy } from 'ramda';
-
-import { snd } from '../common';
-
-// function reconstruct_path(cameFrom, current)
-//     total_path := {current}
-//     while current in cameFrom.Keys:
-//         current := cameFrom[current]
-//         total_path.prepend(current)
-//     return total_path
-
-const reconstructPath = <T>(cameFrom: Map<T, T>, start: T) => {
-  let current = start;
-  const totalPath = [current];
-  while (cameFrom.has(current)) {
-    current = cameFrom.get(current)!;
-    totalPath.unshift(current);
-  }
-  return totalPath;
-};
+import { createPath } from '../utils/common';
+import { priorityQueue } from '../utils/priorityQueue';
 
 export const aStar = <T>(
   getNeighbors: (n: T) => T[],
@@ -25,23 +7,27 @@ export const aStar = <T>(
   remaining: (n: T) => number,
   found: (a: T) => boolean,
   start: T
-) => {
-  const openSet = new Set<T>([start]);
+): [number, T[]] | undefined => {
   const cameFrom = new Map<T, T>();
   const gScore = new Map<T, number>([[start, 0]]);
   const fScore = new Map<T, number>([[start, remaining(start)]]);
 
-  while (openSet.size) {
-    // super inefficient, but fine to get this working
-    const [first, ...rest] = [...openSet].map(x => [x, fScore.get(x)] as [T, number]);
-    const [current] = rest.reduce<[T, number]>(
-      minBy<[T, number]>(snd) as (a: [T, number], b: [T, number]) => [T, number],
-      first
-    );
+  const queue = priorityQueue((a: T, b: T) => {
+    const aScore = fScore.get(a)!;
+    const bScore = fScore.get(b)!;
+    return aScore < bScore;
+  });
 
-    if (found(current)) return reconstructPath(cameFrom, current);
+  queue.push(start);
 
-    openSet.delete(current);
+  while (!queue.isEmpty()) {
+    const current = queue.pop()!;
+
+    if (found(current)) {
+      const path = createPath(cameFrom, current);
+      const totalCost = gScore.get(current)!;
+      return [totalCost, path];
+    }
 
     const neighbors = getNeighbors(current);
     for (const neighbor of neighbors) {
@@ -51,7 +37,7 @@ export const aStar = <T>(
         cameFrom.set(neighbor, current);
         gScore.set(neighbor, tentativeGScore);
         fScore.set(neighbor, tentativeGScore + remaining(neighbor));
-        openSet.add(neighbor);
+        queue.push(neighbor);
       }
     }
   }

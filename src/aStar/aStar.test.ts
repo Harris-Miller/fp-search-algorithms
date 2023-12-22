@@ -2,7 +2,7 @@ import { indexBy, isNotNil, toString } from 'ramda';
 
 import { readFileSync } from 'node:fs';
 
-import { aStar } from './aStar';
+import { aStar } from './aStarPure';
 
 type Point = {
   height: number;
@@ -18,7 +18,7 @@ const heightMap: Record<string, number> = {
 };
 
 // @ts-expect-error
-const hills = readFileSync(new URL('./sample.txt', import.meta.url), { encoding: 'utf8' });
+const hills = readFileSync(new URL('./hills.txt', import.meta.url), { encoding: 'utf8' });
 
 const createGrid = (data: string) => {
   const rows = data.split('\n');
@@ -45,12 +45,9 @@ const makeNext =
     return neighbors.filter((neighbor: Point) => canMoveTo(point, neighbor));
   };
 
-describe.skip('aStar', () => {
+describe('aStar', () => {
   it('works', () => {
     const grid = createGrid(hills);
-
-    // let start1 = fst $ fromJust $ find (\(_, v) -> v == 'S') grid
-    // let end1 = fst $ fromJust $ find (\(_, v) -> v == 'E') grid
 
     const start = grid.find(({ letter }) => letter === 'S')!;
     const end = grid.find(({ letter }) => letter === 'E')!;
@@ -67,7 +64,7 @@ describe.skip('aStar', () => {
 
     console.log(r);
 
-    const steps = r.length;
+    const steps = r?.[0];
 
     expect(steps).toBe(412);
   });

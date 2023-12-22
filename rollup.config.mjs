@@ -19,10 +19,10 @@ const output = format => {
 export default {
   external: /node_modules/,
   input: {
-    aStar: 'src/aStar.ts',
-    bfs: 'src/bfs.ts',
-    dfs: 'src/dfs.ts',
-    dijkstra: 'src/dijkstra.ts',
+    aStar: 'src/aStar/aStar.ts',
+    breadthFirst: 'src/breadthFirst/breadthFirst.ts',
+    depthFirst: 'src/depthFirst/depthFirst.ts',
+    dijkstra: 'src/dijkstra/dijkstra.ts',
     index: 'src/index.ts',
     utility: 'src/utility.ts'
   },

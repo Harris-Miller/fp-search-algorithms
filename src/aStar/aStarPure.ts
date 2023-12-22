@@ -1,6 +1,6 @@
 import { minBy } from 'ramda';
 
-import { snd } from './common';
+import { snd } from '../common';
 
 // function reconstruct_path(cameFrom, current)
 //     total_path := {current}

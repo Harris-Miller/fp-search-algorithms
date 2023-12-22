@@ -1,10 +1,12 @@
+import { isNotNil } from 'ramda';
+
 /* eslint-disable no-bitwise */
 const top = 0;
 const parent = (i: number) => ((i + 1) >>> 1) - 1;
 const left = (i: number) => (i << 1) + 1;
 const right = (i: number) => (i + 1) << 1;
 
-export const priorityQueue = <T>(comparator: (a: T, b: T) => number) => {
+export const priorityQueue = <T>(comparator: (a: T, b: T) => boolean) => {
   const heap: T[] = [];
 
   const size = () => heap.length;
@@ -14,7 +16,10 @@ export const priorityQueue = <T>(comparator: (a: T, b: T) => number) => {
   const greater = (i: number, j: number) => comparator(heap[i], heap[j]);
 
   const swap = (i: number, j: number) => {
-    [heap[i], heap[j]] = [heap[j], heap[i]];
+    const a = heap[i];
+    const b = heap[j];
+    heap[j] = a;
+    heap[i] = b;
   };
 
   const siftUp = () => {
@@ -43,6 +48,7 @@ export const priorityQueue = <T>(comparator: (a: T, b: T) => number) => {
 
   const push = (value: T): void => {
     heap.push(value);
+    siftUp();
   };
 
   const pop = (): T | undefined => {

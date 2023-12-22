@@ -1,10 +1,9 @@
 import { indexBy, isNotNil, toString } from 'ramda';
 
 import { readFileSync } from 'node:fs';
+import * as path from 'node:path';
 
-import { aStar } from '../../aStar';
-import { aStar as aStarPure } from '../../aStarPure';
-import { snd } from '../../common';
+import { aStar } from './aStarPure';
 
 type Point = {
   height: number;
@@ -19,12 +18,10 @@ const heightMap: Record<string, number> = {
   S: 1
 };
 
-// @ts-expect-error
-const hills = readFileSync(new URL('./sample.txt', import.meta.url), { encoding: 'utf8' });
+const hills = readFileSync(path.resolve(__dirname, './aStar/sample.txt'), { encoding: 'utf8' });
 
-const createGrid = (data: string) => {
+const createGrid = (data: string): Point[] => {
   const rows = data.split('\n');
-
   return rows.flatMap((row, i) => row.split('').map((v, j) => ({ height: heightMap[v], letter: v, x: i, y: j })));
 };
 
@@ -47,40 +44,23 @@ const makeNext =
     return neighbors.filter((neighbor: Point) => canMoveTo(point, neighbor));
   };
 
-describe('aStar', () => {
-  it('works', () => {
-    const grid = createGrid(hills);
+const grid = createGrid(hills);
 
-    // let start1 = fst $ fromJust $ find (\(_, v) -> v == 'S') grid
-    // let end1 = fst $ fromJust $ find (\(_, v) -> v == 'E') grid
+// let start1 = fst $ fromJust $ find (\(_, v) -> v == 'S') grid
+// let end1 = fst $ fromJust $ find (\(_, v) -> v == 'E') grid
 
-    const start = grid.find(({ letter }) => letter === 'S')!;
-    const end = grid.find(({ letter }) => letter === 'E')!;
+const start = grid.find(({ letter }) => letter === 'S')!;
+const end = grid.find(({ letter }) => letter === 'E')!;
 
-    const gridKeyMap = indexBy(({ x, y }) => toString({ x, y }), grid);
+const gridKeyMap = indexBy(({ x, y }) => toString({ x, y }), grid);
 
-    const r = aStar(
-      makeNext(gridKeyMap),
-      () => 1,
-      heuristic(end),
-      state => state === end,
-      start
-    )!;
+const r = aStar(
+  makeNext(gridKeyMap),
+  () => 1,
+  heuristic(end),
+  state => state === end,
+  start
+);
 
-    console.log(r);
-
-    const r2 = aStarPure(
-      makeNext(gridKeyMap),
-      () => 1,
-      heuristic(end),
-      state => state === end,
-      start
-    );
-
-    console.log(r2);
-
-    const steps = snd(r).length;
-
-    expect(steps).toBe(412);
-  });
-});
+console.log(r);
+console.log(r?.length);

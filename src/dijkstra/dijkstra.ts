@@ -1,7 +1,8 @@
 import { isNil, last, toString } from 'ramda';
 
-import { fst, leastCostly, lifoHeap, snd } from './common';
-import { generalizedSearch } from './generalizedSearch';
+import { fst, leastCostly, lifoHeap, snd } from '../common';
+import { generalizedSearch } from '../generalizedSearch_old';
+import { priorityQueue } from '../utils/priorityQueue';
 
 /**
  * This API to Dijkstra's algorithm is useful in the common case when next
@@ -46,6 +47,22 @@ export const dijkstraAssoc = <TState>(
 };
 
 /**
+ *
+ * @param prevMap
+ * @param final
+ * @returns
+ */
+const createPath = <T>(prevMap: Map<T, T>, final: T) => {
+  const path: T[] = [final];
+  let prev = prevMap.get(final);
+  while (prev) {
+    path.push(prev);
+    prev = prevMap.get(prev);
+  }
+  return path.reverse();
+};
+
+/**
  * Performs a shortest-path search over
  * a set of states using Dijkstra's algorithm, starting with `initial`,
  * generating neighboring states with `next`, and their incremental costs with
@@ -62,11 +79,47 @@ export const dijkstraAssoc = <TState>(
  */
 export const dijkstra = <T>(
   next: (state: T) => T[],
-  cost: (stA: T, stB: T) => number,
+  cost: (from: T, to: T) => number,
   found: (state: T) => boolean,
   initial: T
 ): [number, T[]] | undefined => {
-  // create assocNext out of `next` and `cost`
-  const nextAssoc = (st: T) => next(st).map<[T, number]>(newSt => [newSt, cost(st, newSt)]);
-  return dijkstraAssoc(nextAssoc, found, initial);
+  const prevMap = new Map<T, T>();
+  const costMap = new Map<T, number>([[initial, 0]]);
+
+  const visited = new Set<T>();
+
+  const queue = priorityQueue<T>((a: T, b: T) => {
+    const aCost = costMap.get(a) ?? Infinity;
+    const bCost = costMap.get(b) ?? Infinity;
+    return aCost < bCost;
+  });
+
+  queue.push(initial);
+
+  while (!queue.isEmpty()) {
+    const v = queue.pop()!;
+
+    if (found(v)) {
+      const path = createPath(prevMap, v);
+      const totalCost = costMap.get(v)!;
+      return [totalCost, path];
+    }
+
+    visited.add(v);
+
+    const vCost = costMap.get(v) ?? Infinity;
+
+    const ns = next(v);
+    for (const n of ns) {
+      const nCost = cost(v, n);
+      const alt = vCost + nCost;
+      if (alt < (costMap.get(n) ?? Infinity)) {
+        costMap.set(n, alt);
+        prevMap.set(n, v);
+        queue.push(n);
+      }
+    }
+  }
+
+  return undefined;
 };

@@ -3,7 +3,7 @@ import { indexBy, isNotNil, toString } from 'ramda';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { aStar } from './src/aStar';
+import { aStar } from './src/aStar/aStar';
 import { snd } from './src/common';
 
 type Point = {

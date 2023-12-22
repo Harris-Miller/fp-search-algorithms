@@ -1,5 +1,7 @@
 import { tail, zipWith } from 'ramda';
 
+export type NonEmptyArray<T> = [T, ...T[]];
+
 /**
  * Gives a list of the incremental costs
  * going from state to state along the path given in `states`, using the cost

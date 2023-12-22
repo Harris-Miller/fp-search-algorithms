@@ -1,30 +1,48 @@
 /**
  * Abstraction of a SearchContainer that just has pop and push methods
  */
-export interface SearchContainer<T> {
+export interface Container<T> {
   pop(): T | undefined;
   push(elm: T): void;
+  size(): number;
 }
 
 /**
- * Abstracted stack that implements SearchContainer
+ * Abstracted queue that implements SearchContainer. FIFO
  */
-export const stack = <A>(): SearchContainer<A> => {
+export const queue = <A>(): Container<A> => {
   const inner: A[] = [];
+  const size = () => inner.length;
+  const pop = () => inner.pop();
+  const push = (val: A) => {
+    inner.unshift(val);
+  };
+
+  return { pop, push, size };
+};
+
+/**
+ * Abstracted stack that implements SearchContainer. FILO
+ */
+export const stack = <A>(): Container<A> => {
+  const inner: A[] = [];
+  const size = () => inner.length;
   const pop = () => inner.pop();
   const push = (val: A) => {
     inner.push(val);
   };
 
-  return { pop, push };
+  return { pop, push, size };
 };
 
 /**
  * Last in, First Out Heap, implements SearchContainer
  */
-export const lifoHeap = <A>(): SearchContainer<[number, A]> => {
+export const lifoHeap = <A>(): Container<[number, A]> => {
   // Map retains order of insertion
   const inner: Map<number, A[]> = new Map();
+
+  const size = () => inner.size;
 
   const pop = () => {
     if (inner.size === 0) {
@@ -48,7 +66,7 @@ export const lifoHeap = <A>(): SearchContainer<[number, A]> => {
     }
   };
 
-  return { pop, push };
+  return { pop, push, size };
 };
 
 export const fst = <A, B>(tuple: [A, B]): A => tuple[0];

@@ -2,7 +2,7 @@ import { indexBy, isNotNil, toString } from 'ramda';
 
 import { readFileSync } from 'node:fs';
 
-import { aStar } from './aStarPure';
+import { aStar } from './aStar';
 
 type Point = {
   height: number;
@@ -62,10 +62,7 @@ describe('aStar', () => {
       start
     )!;
 
-    console.log(r);
-
     const steps = r?.[0];
-
     expect(steps).toBe(412);
   });
 });

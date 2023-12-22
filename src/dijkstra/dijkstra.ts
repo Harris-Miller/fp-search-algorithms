@@ -1,5 +1,5 @@
-import { createPath } from '../utils/common';
-import { priorityQueue } from '../utils/priorityQueue';
+import { priorityQueue } from '../utils/containers';
+import { createPath } from '../utils/utils';
 
 /**
  * This API to Dijkstra's algorithm is useful in the common case when next

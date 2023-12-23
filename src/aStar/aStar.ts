@@ -1,5 +1,54 @@
+import { last } from 'ramda';
+
 import { priorityQueue } from '../utils/containers';
 import { createPath } from '../utils/utils';
+
+export function* aStarAssocTraversal<T>(
+  next: (n: T) => [T, number][],
+  remaining: (n: T) => number,
+  start: T
+): Generator<[number, T[]]> {
+  const cameFrom = new Map<T, T>();
+  const gScore = new Map<T, number>([[start, 0]]);
+  const fScore = new Map<T, number>([[start, remaining(start)]]);
+
+  const queue = priorityQueue((a: T, b: T) => {
+    const aScore = fScore.get(a)!;
+    const bScore = fScore.get(b)!;
+    return aScore < bScore;
+  });
+  queue.push(start);
+
+  while (!queue.isEmpty()) {
+    const current = queue.pop()!;
+
+    yield [gScore.get(current)!, createPath(cameFrom, current)];
+
+    const neighbors = next(current);
+    for (const [neighbor, nCost] of neighbors) {
+      const tentativeGScore = gScore.get(current)! + nCost;
+
+      if (tentativeGScore < (gScore.get(neighbor) ?? Infinity)) {
+        cameFrom.set(neighbor, current);
+        gScore.set(neighbor, tentativeGScore);
+        fScore.set(neighbor, tentativeGScore + remaining(neighbor));
+        queue.push(neighbor);
+      }
+    }
+  }
+
+  return undefined;
+}
+
+export function* aStarTraversal<T>(
+  next: (n: T) => T[],
+  cost: (a: T, b: T) => number,
+  remaining: (n: T) => number,
+  start: T
+): Generator<[number, T[]]> {
+  const nextAssoc = (state: T) => next(state).map(n => [n, cost(state, n)] as [T, number]);
+  yield* aStarAssocTraversal(nextAssoc, remaining, start);
+}
 
 /**
  * Performs a best-first search
@@ -22,41 +71,13 @@ export const aStarAssoc = <T>(
   remaining: (n: T) => number,
   found: (a: T) => boolean,
   start: T
-): [number, T[]] | undefined => {
-  const cameFrom = new Map<T, T>();
-  const gScore = new Map<T, number>([[start, 0]]);
-  const fScore = new Map<T, number>([[start, remaining(start)]]);
-
-  const queue = priorityQueue((a: T, b: T) => {
-    const aScore = fScore.get(a)!;
-    const bScore = fScore.get(b)!;
-    return aScore < bScore;
-  });
-
-  queue.push(start);
-
-  while (!queue.isEmpty()) {
-    const current = queue.pop()!;
-
-    if (found(current)) {
-      const path = createPath(cameFrom, current);
-      const totalCost = gScore.get(current)!;
-      return [totalCost, path];
-    }
-
-    const neighbors = next(current);
-    for (const [neighbor, nCost] of neighbors) {
-      const tentativeGScore = gScore.get(current)! + nCost;
-
-      if (tentativeGScore < (gScore.get(neighbor) ?? Infinity)) {
-        cameFrom.set(neighbor, current);
-        gScore.set(neighbor, tentativeGScore);
-        fScore.set(neighbor, tentativeGScore + remaining(neighbor));
-        queue.push(neighbor);
-      }
-    }
+): [number, T[], T[]] | undefined => {
+  const visited: T[] = [];
+  for (const [value, pathTo] of aStarAssocTraversal(next, remaining, start)) {
+    const current = last(pathTo)!;
+    visited.push(current);
+    if (found(current)) return [value, pathTo, visited];
   }
-
   return undefined;
 };
 
@@ -83,7 +104,12 @@ export const aStar = <T>(
   remaining: (n: T) => number,
   found: (a: T) => boolean,
   start: T
-): [number, T[]] | undefined => {
-  const nextAssoc = (state: T) => next(state).map(n => [n, cost(state, n)] as [T, number]);
-  return aStarAssoc(nextAssoc, remaining, found, start);
+): [number, T[], T[]] | undefined => {
+  const visited: T[] = [];
+  for (const [value, pathTo] of aStarTraversal(next, cost, remaining, start)) {
+    const current = last(pathTo)!;
+    visited.push(current);
+    if (found(current)) return [value, pathTo, visited];
+  }
+  return undefined;
 };

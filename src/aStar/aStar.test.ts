@@ -1,15 +1,8 @@
-import { indexBy, isNotNil, toString } from 'ramda';
-
 import { readFileSync } from 'node:fs';
 
-import { aStar } from './aStar';
+import { getNeighbors4, makeGrid, strToPoint } from '../__tests__/utils';
 
-type Point = {
-  height: number;
-  letter: string;
-  x: number;
-  y: number;
-};
+import { aStar } from './aStar';
 
 const heightMap: Record<string, number> = {
   ...'abcdefghijklmnopqrstuvwxyz'.split('').reduce<Record<string, number>>((acc, v, i) => ({ ...acc, [v]: i + 1 }), {}),
@@ -20,42 +13,35 @@ const heightMap: Record<string, number> = {
 // @ts-expect-error
 const hills = readFileSync(new URL('./hills.txt', import.meta.url), { encoding: 'utf8' });
 
-const createGrid = (data: string) => {
-  const rows = data.split('\n');
+const grid = makeGrid(hills);
 
-  return rows.flatMap((row, i) => row.split('').map((v, j) => ({ height: heightMap[v], letter: v, x: i, y: j })));
+const heuristic = (aStr: string) => (bStr: string) => {
+  const [aX, aY] = strToPoint(aStr);
+  const [bX, bY] = strToPoint(bStr);
+  return Math.abs(aX - bX) + Math.abs(aY - bY);
 };
 
-const heuristic = (a: Point) => (b: Point) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+const canMoveTo = (s1: string, s2: string) => {
+  const h1 = heightMap[grid.get(s1)!];
+  const h2 = heightMap[grid.get(s2)!];
+  return h2 - h1 < 2;
+};
 
-const canMoveTo = (pt1: Point, pt2: Point) => pt2.height - pt1.height < 2;
-
-const makeNext =
-  (gridKeyMap: Record<string, Point>) =>
-  (point: Point): Point[] => {
-    const { x, y } = point;
-    const neighborKeys = [
-      { x: x - 1, y },
-      { x: x + 1, y },
-      { x, y: y - 1 },
-      { x, y: y + 1 }
-    ].map(toString);
-    const neighbors = neighborKeys.map(k => gridKeyMap[k]).filter(isNotNil);
-
-    return neighbors.filter((neighbor: Point) => canMoveTo(point, neighbor));
-  };
+const next = (s: string): string[] =>
+  getNeighbors4(s)
+    .filter(key => grid.has(key))
+    .filter(n => canMoveTo(s, n));
 
 describe('aStar', () => {
   it('works', () => {
-    const grid = createGrid(hills);
+    // const grid = createGrid(hills);
 
-    const start = grid.find(({ letter }) => letter === 'S')!;
-    const end = grid.find(({ letter }) => letter === 'E')!;
-
-    const gridKeyMap = indexBy(({ x, y }) => toString({ x, y }), grid);
+    const asArr = [...grid.entries()];
+    const start = asArr.find(([_, letter]) => letter === 'S')![0];
+    const end = asArr.find(([_, letter]) => letter === 'E')![0];
 
     const r = aStar(
-      makeNext(gridKeyMap),
+      next,
       () => 1,
       heuristic(end),
       state => state === end,

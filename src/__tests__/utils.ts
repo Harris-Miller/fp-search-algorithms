@@ -23,8 +23,8 @@ export const makeGrid = (s: string) => {
   return results;
 };
 
-const strToPoint = (s: string) => s.split(', ').map(Number) as [number, number];
-const pointToStr = ([r, c]: [number, number]) => `${r}, ${c}`;
+export const strToPoint = (s: string) => s.split(', ').map(Number) as [number, number];
+export const pointToStr = ([r, c]: [number, number]) => `${r}, ${c}`;
 
 export const findMax = (grid: Map<string, string>) =>
   [...grid.keys()]

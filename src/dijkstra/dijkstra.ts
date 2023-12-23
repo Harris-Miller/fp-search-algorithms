@@ -1,5 +1,53 @@
+import { last } from 'ramda';
+
 import { priorityQueue } from '../utils/containers';
 import { createPath } from '../utils/utils';
+
+export function* dijkstraAssocTraversal<T>(next: (state: T) => [T, number][], initial: T): Generator<[number, T[]]> {
+  const prevMap = new Map<T, T>();
+  const costMap = new Map<T, number>([[initial, 0]]);
+
+  const visited = new Set<T>();
+
+  const queue = priorityQueue<T>((a: T, b: T) => {
+    const aCost = costMap.get(a) ?? Infinity;
+    const bCost = costMap.get(b) ?? Infinity;
+    return aCost < bCost;
+  });
+
+  queue.push(initial);
+
+  while (!queue.isEmpty()) {
+    const v = queue.pop()!;
+
+    yield [costMap.get(v)!, createPath(prevMap, v)];
+
+    visited.add(v);
+
+    const vCost = costMap.get(v) ?? Infinity;
+
+    const ns = next(v);
+    for (const [n, nCost] of ns) {
+      const alt = vCost + nCost;
+      if (alt < (costMap.get(n) ?? Infinity)) {
+        costMap.set(n, alt);
+        prevMap.set(n, v);
+        queue.push(n);
+      }
+    }
+  }
+
+  return undefined;
+}
+
+export function* dijkstraTraversal<T>(
+  next: (state: T) => T[],
+  cost: (from: T, to: T) => number,
+  initial: T
+): Generator<[number, T[]]> {
+  const nextAssoc = (state: T) => next(state).map(n => [n, cost(state, n)] as [T, number]);
+  yield* dijkstraAssocTraversal(nextAssoc, initial);
+}
 
 /**
  * This API to Dijkstra's algorithm is useful in the common case when next
@@ -22,44 +70,13 @@ export const dijkstraAssoc = <T>(
   next: (state: T) => [T, number][],
   found: (state: T) => boolean,
   initial: T
-): [number, T[]] | undefined => {
-  const prevMap = new Map<T, T>();
-  const costMap = new Map<T, number>([[initial, 0]]);
-
-  const visited = new Set<T>();
-
-  const queue = priorityQueue<T>((a: T, b: T) => {
-    const aCost = costMap.get(a) ?? Infinity;
-    const bCost = costMap.get(b) ?? Infinity;
-    return aCost < bCost;
-  });
-
-  queue.push(initial);
-
-  while (!queue.isEmpty()) {
-    const v = queue.pop()!;
-
-    if (found(v)) {
-      const path = createPath(prevMap, v);
-      const totalCost = costMap.get(v)!;
-      return [totalCost, path];
-    }
-
-    visited.add(v);
-
-    const vCost = costMap.get(v) ?? Infinity;
-
-    const ns = next(v);
-    for (const [n, nCost] of ns) {
-      const alt = vCost + nCost;
-      if (alt < (costMap.get(n) ?? Infinity)) {
-        costMap.set(n, alt);
-        prevMap.set(n, v);
-        queue.push(n);
-      }
-    }
+): [number, T[], T[]] | undefined => {
+  const visited: T[] = [];
+  for (const [value, pathTo] of dijkstraAssocTraversal(next, initial)) {
+    const current = last(pathTo)!;
+    visited.push(current);
+    if (found(current)) return [value, pathTo, visited];
   }
-
   return undefined;
 };
 
@@ -83,7 +100,7 @@ export const dijkstra = <T>(
   cost: (from: T, to: T) => number,
   found: (state: T) => boolean,
   initial: T
-): [number, T[]] | undefined => {
+): [number, T[], T[]] | undefined => {
   const nextAssoc = (state: T) => next(state).map(n => [n, cost(state, n)] as [T, number]);
   return dijkstraAssoc(nextAssoc, found, initial);
 };

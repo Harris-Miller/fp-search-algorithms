@@ -23,8 +23,7 @@ export default {
     breadthFirst: 'src/breadthFirst/breadthFirst.ts',
     depthFirst: 'src/depthFirst/depthFirst.ts',
     dijkstra: 'src/dijkstra/dijkstra.ts',
-    index: 'src/index.ts',
-    utility: 'src/utility.ts'
+    index: 'src/index.ts'
   },
   output: [output('esm'), output('cjs')],
   plugins: [

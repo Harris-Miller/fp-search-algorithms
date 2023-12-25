@@ -35,11 +35,7 @@
       "require": "./dist/dijkstra.js",
       "types": "./dist/dijkstra.d.ts"
     },
-    "./utility": {
-      "import": "./dist/utility.mjs",
-      "require": "./dist/utility.js",
-      "types": "./dist/utility.d.ts"
-    }
+    "./package.json": "./package.json"
   },
   "files": [
     "dist"

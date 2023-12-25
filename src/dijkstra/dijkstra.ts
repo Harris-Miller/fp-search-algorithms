@@ -1,7 +1,7 @@
 import { last } from 'ramda';
 
-import { priorityQueue } from '../utils/containers';
-import { createPath } from '../utils/utils';
+import { createPath } from '../utils/createPath';
+import { priorityQueue } from '../utils/priorityQueue';
 
 export function* dijkstraAssocTraversal<T>(next: (state: T) => [T, number][], initial: T): Generator<[number, T[]]> {
   const prevMap = new Map<T, T>();

@@ -31,8 +31,6 @@ export function* breadthFirstTraversal<T>(next: (a: T) => T[], start: T): Genera
         .map(v => [v, nextPathSoFar] as [T, T[]])
     );
   }
-
-  return undefined;
 }
 
 /**

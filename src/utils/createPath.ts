@@ -1,10 +1,12 @@
+import { toString } from 'ramda';
+
 /** @internal */
-export const createPath = <T>(prevMap: Map<T, T>, final: T) => {
+export const createPath = <T>(prevMap: Map<string, T>, final: T) => {
   const path: T[] = [final];
-  let prev = prevMap.get(final);
+  let prev = prevMap.get(toString(final));
   while (prev) {
     path.unshift(prev);
-    prev = prevMap.get(prev);
+    prev = prevMap.get(toString(prev));
   }
   return path;
 };

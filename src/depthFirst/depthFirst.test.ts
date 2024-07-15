@@ -1,4 +1,4 @@
-import { depthFirstSearch, generateDfs } from './depthFirst';
+import { depthFirstSearch, depthFirstTraversal } from './depthFirst';
 
 type Tree<T> = { children: Tree<T>[]; value: T };
 
@@ -26,7 +26,7 @@ describe('depth first search', () => {
   test('generator function', () => {
     const next = ({ children }: Tree<string>) => children;
 
-    const genResults = [...generateDfs(next, tree)].map(({ value }) => value);
+    const genResults = [...depthFirstTraversal(next, tree)].map(x => x[0].value);
 
     expect(genResults).toEqual(['1', '11', '111', '112', '12', '121', '122']);
   });
@@ -35,7 +35,7 @@ describe('depth first search', () => {
     const next = ({ children }: Tree<string>) => children;
     const found = ({ value }: Tree<string>) => value === '122';
 
-    const searchResults = depthFirstSearch(next, found, tree)?.map(({ value }) => value);
+    const searchResults = depthFirstSearch(next, found, tree)?.[1].map(x => x.value);
 
     expect(searchResults).toEqual(['1', '12', '122']);
   });

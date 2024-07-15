@@ -27,9 +27,9 @@ export function* depthFirstTraversal<T>(next: (a: T) => T[], start: T): Generato
     const nextPathSoFar = [...pathSoFar, value];
     stack.push(
       ...next(value)
-        .reverse()
         .filter(v => !visited.has(toString(v)))
         .map(v => [v, nextPathSoFar] as [T, T[]])
+        .reverse()
     );
   }
 }

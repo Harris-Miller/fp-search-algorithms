@@ -1,3 +1,6 @@
+// eslint-disable-next-line import/no-unresolved
+import { describe, expect, it } from 'bun:test';
+
 import { readFileSync } from 'node:fs';
 
 import { getNeighbors4, makeGrid, strToPoint } from '../__tests__/utils';
@@ -7,10 +10,9 @@ import { aStar } from './aStar';
 const heightMap: Record<string, number> = {
   ...'abcdefghijklmnopqrstuvwxyz'.split('').reduce<Record<string, number>>((acc, v, i) => ({ ...acc, [v]: i + 1 }), {}),
   E: 26,
-  S: 1
+  S: 1,
 };
 
-// @ts-expect-error
 const hills = readFileSync(new URL('./hills.txt', import.meta.url), { encoding: 'utf8' });
 
 const grid = makeGrid(hills);
@@ -37,18 +39,18 @@ describe('aStar', () => {
     // const grid = createGrid(hills);
 
     const asArr = [...grid.entries()];
-    const start = asArr.find(([_, letter]) => letter === 'S')![0];
-    const end = asArr.find(([_, letter]) => letter === 'E')![0];
+    const [start] = asArr.find(([, letter]) => letter === 'S')!;
+    const [end] = asArr.find(([, letter]) => letter === 'E')!;
 
     const r = aStar(
       next,
       () => 1,
       heuristic(end),
       state => state === end,
-      start
+      start,
     )!;
 
-    const steps = r?.[0];
+    const [steps] = r;
     expect(steps).toBe(412);
   });
 });

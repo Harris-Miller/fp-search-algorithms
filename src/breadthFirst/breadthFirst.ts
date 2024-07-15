@@ -28,7 +28,7 @@ export function* breadthFirstTraversal<T>(next: (a: T) => T[], start: T): Genera
     queue.push(
       ...next(value)
         .filter(v => !visited.has(toString(v)))
-        .map(v => [v, nextPathSoFar] as [T, T[]])
+        .map(v => [v, nextPathSoFar] as [T, T[]]),
     );
   }
 }
@@ -48,7 +48,7 @@ export function* breadthFirstTraversal<T>(next: (a: T) => T[], start: T): Genera
 export const breadthFirstSearch = <T>(
   next: (state: T) => T[],
   found: (state: T) => boolean,
-  start: T
+  start: T,
 ): [T, T[], T[]] | undefined => {
   const visited: T[] = [];
   for (const [value, pathTo] of breadthFirstTraversal(next, start)) {

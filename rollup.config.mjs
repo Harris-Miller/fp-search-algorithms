@@ -11,19 +11,19 @@ const output = format => {
     esModule: format !== 'esm',
     exports: 'named',
     format,
-    sourcemap: true
+    sourcemap: true,
   };
 };
 
 /** @type {import('rollup').RollupOptions} */
-export default {
+const rollupConfig = {
   external: /node_modules/,
   input: {
     aStar: 'src/aStar/aStar.ts',
     breadthFirst: 'src/breadthFirst/breadthFirst.ts',
     depthFirst: 'src/depthFirst/depthFirst.ts',
     dijkstra: 'src/dijkstra/dijkstra.ts',
-    index: 'src/index.ts'
+    index: 'src/index.ts',
   },
   output: [output('esm'), output('cjs')],
   plugins: [
@@ -32,7 +32,10 @@ export default {
       composite: false,
       outDir: 'dist',
       rootDir: 'src',
-      tsconfig: 'tsconfig.lib.json'
-    })
-  ]
+      tsconfig: 'tsconfig.lib.json',
+    }),
+  ],
 };
+
+// eslint-disable-next-line import/no-default-export
+export default rollupConfig;

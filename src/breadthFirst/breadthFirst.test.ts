@@ -1,5 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+// eslint-disable-next-line import/no-unresolved
+import { describe, expect, test } from 'bun:test';
 
 import { getNeighbors4, makeGrid } from '../__tests__/utils';
 
@@ -12,7 +12,7 @@ describe('breadth first', () => {
     const results: string[] = [];
     for (const [value] of breadthFirstTraversal(next, '1')) {
       // false-positive
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
       results.push(value);
       if (value === '122') break;
     }
@@ -29,15 +29,14 @@ describe('breadth first', () => {
     expect(searchResults?.[1]).toEqual(['1', '12', '122']);
   });
 
-  test('cheese search', () => {
-    const contents = readFileSync(resolve(__dirname, 'cheeseSearch.txt'), { encoding: 'utf8' });
+  test('cheese search', async () => {
+    const url = new URL('./cheeseSearch.txt', import.meta.url);
+    const contents = await Bun.file(url).text();
     const grid = makeGrid(contents);
-    const walls = new Set(
-      [...grid].filter(([_, v]: [string, string]) => v === '#').map(([k, _]: [string, string]) => k)
-    );
+    const walls = new Set([...grid].filter(([, v]: [string, string]) => v === '#').map(([k]: [string, string]) => k));
     const [start, end] = [...grid]
-      .filter(([_, v]: [string, string]) => v === '0' || v === '7')
-      .map(([k, _]: [string, string]) => k);
+      .filter(([, v]: [string, string]) => v === '0' || v === '7')
+      .map(([k]: [string, string]) => k);
 
     const next = (s: string) => getNeighbors4(s).filter(x => !walls.has(x));
     const found = (s: string) => s === end;

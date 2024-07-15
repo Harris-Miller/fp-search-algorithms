@@ -5,7 +5,7 @@ import { priorityQueue } from '../utils/priorityQueue';
 
 export function* dijkstraAssocTraversal<T>(
   getNextStates: (state: T) => [T, number][],
-  initial: T
+  initial: T,
 ): Generator<[number, T[]]> {
   const prevMap = new Map<string, T>();
   const costMap = new Map<string, number>([[toString(initial), 0]]);
@@ -48,7 +48,7 @@ export function* dijkstraAssocTraversal<T>(
 export function* dijkstraTraversal<T>(
   getNextStates: (state: T) => T[],
   getCost: (from: T, to: T) => number,
-  initial: T
+  initial: T,
 ): Generator<[number, T[]]> {
   const nextAssoc = (state: T) => getNextStates(state).map(n => [n, getCost(state, n)] as [T, number]);
   yield* dijkstraAssocTraversal(nextAssoc, initial);
@@ -74,7 +74,7 @@ export function* dijkstraTraversal<T>(
 export const dijkstraAssoc = <T>(
   getNextStates: (state: T) => [T, number][],
   determineIfFound: (state: T) => boolean,
-  initial: T
+  initial: T,
 ): [number, T[], T[]] | undefined => {
   const visited: T[] = [];
   for (const [value, pathTo] of dijkstraAssocTraversal(getNextStates, initial)) {
@@ -104,7 +104,7 @@ export const dijkstra = <T>(
   getNextStates: (state: T) => T[],
   getCost: (from: T, to: T) => number,
   determineIfFound: (state: T) => boolean,
-  initial: T
+  initial: T,
 ): [number, T[], T[]] | undefined => {
   const nextAssoc = (state: T) => getNextStates(state).map(n => [n, getCost(state, n)] as [T, number]);
   return dijkstraAssoc(nextAssoc, determineIfFound, initial);

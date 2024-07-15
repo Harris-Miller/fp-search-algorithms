@@ -6,7 +6,7 @@ import { priorityQueue } from '../utils/priorityQueue';
 export function* aStarAssocTraversal<T>(
   getNextStates: (n: T) => [T, number][],
   estimateRemainingCost: (n: T) => number,
-  initial: T
+  initial: T,
 ): Generator<[number, T[]]> {
   const cameFrom = new Map<string, T>();
   const initialS = toString(initial);
@@ -47,7 +47,7 @@ export function* aStarTraversal<T>(
   getNextStates: (n: T) => T[],
   getCost: (a: T, b: T) => number,
   estimateRemainingCost: (n: T) => number,
-  initial: T
+  initial: T,
 ): Generator<[number, T[]]> {
   const nextAssoc = (state: T) => getNextStates(state).map(n => [n, getCost(state, n)] as [T, number]);
   yield* aStarAssocTraversal(nextAssoc, estimateRemainingCost, initial);
@@ -73,7 +73,7 @@ export const aStarAssoc = <T>(
   getNextStates: (n: T) => [T, number][],
   estimateRemainingCost: (n: T) => number,
   determineIfFound: (a: T) => boolean,
-  start: T
+  start: T,
 ): [number, T[], T[]] | undefined => {
   const visited: T[] = [];
   for (const [value, pathTo] of aStarAssocTraversal(getNextStates, estimateRemainingCost, start)) {
@@ -106,7 +106,7 @@ export const aStar = <T>(
   getCost: (a: T, b: T) => number,
   estimateRemainingCost: (n: T) => number,
   determineIfFound: (a: T) => boolean,
-  initial: T
+  initial: T,
 ): [number, T[], T[]] | undefined => {
   const visited: T[] = [];
   for (const [value, pathTo] of aStarTraversal(getNextStates, getCost, estimateRemainingCost, initial)) {

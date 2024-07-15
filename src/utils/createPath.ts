@@ -4,7 +4,7 @@ import { toString } from 'ramda';
 export const createPath = <T>(prevMap: Map<string, T>, final: T) => {
   const path: T[] = [final];
   let prev = prevMap.get(toString(final));
-  while (prev) {
+  while (prev != null) {
     path.unshift(prev);
     prev = prevMap.get(toString(prev));
   }

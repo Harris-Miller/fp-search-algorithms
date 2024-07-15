@@ -29,7 +29,7 @@ export function* depthFirstTraversal<T>(next: (a: T) => T[], start: T): Generato
       ...next(value)
         .filter(v => !visited.has(toString(v)))
         .map(v => [v, nextPathSoFar] as [T, T[]])
-        .reverse()
+        .reverse(),
     );
   }
 }
@@ -49,7 +49,7 @@ export function* depthFirstTraversal<T>(next: (a: T) => T[], start: T): Generato
 export const depthFirstSearch = <T>(
   next: (state: T) => T[],
   found: (state: T) => boolean,
-  start: T
+  start: T,
 ): [T, T[], T[]] | undefined => {
   const visited: T[] = [];
   for (const [value, pathTo] of depthFirstTraversal(next, start)) {

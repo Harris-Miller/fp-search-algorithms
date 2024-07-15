@@ -42,8 +42,8 @@
   ],
   "scripts": {
     "build": "rollup -c",
-    "lint": "eslint . --ext=.mjs,.ts,.mts",
-    "test": "vitest",
+    "lint": "eslint .",
+    "test": "bun test",
     "typecheck": "tsc -b"
   },
   "dependencies": {
@@ -53,11 +53,11 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.6",
-    "eslint": "^8.56.0",
-    "eslint-config-harris": "^3.6.0",
-    "rollup": "^4.18.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.5.3",
-    "vitest": "^2.0.2"
+    "@types/bun": "latest",
+    "eslint-config-harris": "^4.0.0-rc.12",
+    "rollup": "^4.18.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5.5.3"
   }
 }

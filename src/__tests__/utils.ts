@@ -11,13 +11,13 @@ export const makeGrid = (s: string) => {
   while (i < l) {
     const char = s.charAt(i);
     if (char === '\n') {
-      ++row;
+      row += 1;
       col = 0;
     } else {
       results.set(`${row}, ${col}`, char);
-      ++col;
+      col += 1;
     }
-    ++i;
+    i += 1;
   }
 
   return results;
@@ -37,7 +37,7 @@ export const getNeighbors4 = (s: string) => {
     [r - 1, c],
     [r, c + 1],
     [r + 1, c],
-    [r, c - 1]
+    [r, c - 1],
   ] as [number, number][];
   return ns.map(pointToStr);
 };

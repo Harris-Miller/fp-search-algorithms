@@ -1,3 +1,6 @@
+// eslint-disable-next-line import/no-unresolved
+import { describe, expect, test } from 'bun:test';
+
 import { depthFirstSearch, depthFirstTraversal } from './depthFirst';
 
 type Tree<T> = { children: Tree<T>[]; value: T };
@@ -7,19 +10,19 @@ const tree: Tree<string> = {
     {
       children: [
         { children: [], value: '111' },
-        { children: [], value: '112' }
+        { children: [], value: '112' },
       ],
-      value: '11'
+      value: '11',
     },
     {
       children: [
         { children: [], value: '121' },
-        { children: [], value: '122' }
+        { children: [], value: '122' },
       ],
-      value: '12'
-    }
+      value: '12',
+    },
   ],
-  value: '1'
+  value: '1',
 };
 
 describe('depth first search', () => {

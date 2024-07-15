@@ -31,6 +31,7 @@ describe('breadth first', () => {
 
   test('cheese search', async () => {
     const url = new URL('./cheeseSearch.txt', import.meta.url);
+    // @ts-expect-error - false positive
     const contents = await Bun.file(url).text();
     const grid = makeGrid(contents);
     const walls = new Set([...grid].filter(([, v]: [string, string]) => v === '#').map(([k]: [string, string]) => k));

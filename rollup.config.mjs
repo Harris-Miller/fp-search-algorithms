@@ -32,7 +32,7 @@ const rollupConfig = {
       composite: false,
       outDir: 'dist',
       rootDir: 'src',
-      tsconfig: 'tsconfig.lib.json',
+      tsconfig: 'tsconfig.build.json',
     }),
   ],
 };

@@ -12,28 +12,28 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     },
     "./aStar": {
-      "import": "./dist/aStar.mjs",
-      "require": "./dist/aStar.js",
+      "import": "./dist/aStar.js",
+      "require": "./dist/aStar.cjs",
       "types": "./dist/aStar.d.ts"
     },
     "./bfs": {
-      "import": "./dist/breadthFirst.mjs",
-      "require": "./dist/breadthFirst.js",
+      "import": "./dist/breadthFirst.js",
+      "require": "./dist/breadthFirst.cjs",
       "types": "./dist/breadthFirst.d.ts"
     },
     "./dfs": {
-      "import": "./dist/depthFirst.mjs",
-      "require": "./dist/depthFirst.js",
+      "import": "./dist/depthFirst.js",
+      "require": "./dist/depthFirst.cjs",
       "types": "./dist/depthFirst.d.ts"
     },
     "./dijkstra": {
-      "import": "./dist/dijkstra.mjs",
-      "require": "./dist/dijkstra.js",
+      "import": "./dist/dijkstra.js",
+      "require": "./dist/dijkstra.cjs",
       "types": "./dist/dijkstra.d.ts"
     },
     "./package.json": "./package.json"

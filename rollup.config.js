@@ -3,7 +3,7 @@ import typescript from '@rollup/plugin-typescript';
 
 /** @type {(format: 'esm' | 'cjs') => import('rollup').OutputOptions} */
 const output = format => {
-  const extension = format === 'esm' ? '.mjs' : '.js';
+  const extension = format === 'esm' ? '.js' : '.cjs';
   return {
     chunkFileNames: `[name]${extension}`,
     dir: './dist',

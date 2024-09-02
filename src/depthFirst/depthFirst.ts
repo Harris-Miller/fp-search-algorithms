@@ -9,7 +9,7 @@ import { toString } from 'ramda';
  * @param next
  * @param initial
  */
-export function* depthFirstTraversal<T>(next: (a: T) => T[], start: T): Generator<[T, T[]]> {
+export const depthFirstTraversal = function* <T>(next: (a: T) => T[], start: T): Generator<[T, T[]]> {
   const visited = new Set<string>();
   // we stack a pair of values and the path through to get there
   const stack: [T, T[]][] = [[start, []]];
@@ -32,7 +32,7 @@ export function* depthFirstTraversal<T>(next: (a: T) => T[], start: T): Generato
         .reverse(),
     );
   }
-}
+};
 
 /**
  * Performs a depth-first search over a set

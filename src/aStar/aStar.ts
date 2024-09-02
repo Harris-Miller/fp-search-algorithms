@@ -3,7 +3,7 @@ import { last, toString } from 'ramda';
 import { createPath } from '../utils/createPath';
 import { priorityQueue } from '../utils/priorityQueue';
 
-export function* aStarAssocTraversal<T>(
+export const aStarAssocTraversal = function* <T>(
   getNextStates: (n: T) => [T, number][],
   estimateRemainingCost: (n: T) => number,
   initial: T,
@@ -41,9 +41,9 @@ export function* aStarAssocTraversal<T>(
   }
 
   return undefined;
-}
+};
 
-export function* aStarTraversal<T>(
+export const aStarTraversal = function* <T>(
   getNextStates: (n: T) => T[],
   getCost: (a: T, b: T) => number,
   estimateRemainingCost: (n: T) => number,
@@ -51,7 +51,7 @@ export function* aStarTraversal<T>(
 ): Generator<[number, T[]]> {
   const nextAssoc = (state: T) => getNextStates(state).map(n => [n, getCost(state, n)] as [T, number]);
   yield* aStarAssocTraversal(nextAssoc, estimateRemainingCost, initial);
-}
+};
 
 /**
  * Performs a best-first search

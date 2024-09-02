@@ -15,16 +15,9 @@ const eslintConfig = [
   },
   {
     rules: {
-      'no-console': 'off',
+      'no-continue': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
-    },
-  },
-  {
-    files: ['src/**'],
-    rules: {
-      'func-style': 'off',
-      'no-continue': 'off',
     },
   },
   {

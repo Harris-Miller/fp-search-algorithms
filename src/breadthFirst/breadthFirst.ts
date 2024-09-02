@@ -9,7 +9,7 @@ import { toString } from 'ramda';
  * @param next
  * @param start
  */
-export function* breadthFirstTraversal<T>(next: (a: T) => T[], start: T): Generator<[T, T[]]> {
+export const breadthFirstTraversal = function* <T>(next: (a: T) => T[], start: T): Generator<[T, T[]]> {
   const visited = new Set<string>();
   // we queue a pair of values and the path through to get there
   const queue: [T, T[]][] = [[start, []]];
@@ -31,7 +31,7 @@ export function* breadthFirstTraversal<T>(next: (a: T) => T[], start: T): Genera
         .map(v => [v, nextPathSoFar] as [T, T[]]),
     );
   }
-}
+};
 
 /**
  * Performs a breadth-first-search (bfs) over a set of states.

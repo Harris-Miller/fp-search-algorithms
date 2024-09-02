@@ -3,7 +3,7 @@ import { last, toString } from 'ramda';
 import { createPath } from '../utils/createPath';
 import { priorityQueue } from '../utils/priorityQueue';
 
-export function* dijkstraAssocTraversal<T>(
+export const dijkstraAssocTraversal = function* <T>(
   getNextStates: (state: T) => [T, number][],
   initial: T,
 ): Generator<[number, T[]]> {
@@ -43,16 +43,16 @@ export function* dijkstraAssocTraversal<T>(
   }
 
   return undefined;
-}
+};
 
-export function* dijkstraTraversal<T>(
+export const dijkstraTraversal = function* <T>(
   getNextStates: (state: T) => T[],
   getCost: (from: T, to: T) => number,
   initial: T,
 ): Generator<[number, T[]]> {
   const nextAssoc = (state: T) => getNextStates(state).map(n => [n, getCost(state, n)] as [T, number]);
   yield* dijkstraAssocTraversal(nextAssoc, initial);
-}
+};
 
 /**
  * This API to Dijkstra's algorithm is useful in the common case when next

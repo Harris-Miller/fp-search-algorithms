@@ -1,8 +1,7 @@
 // eslint-disable-next-line import/no-unresolved
 import { describe, expect, test } from 'bun:test';
-import { always } from 'ramda';
 
-import { getNeighbors4, makeGrid } from '../__tests__/utils';
+import { always, getNeighbors4, makeGrid } from '../__tests__/utils';
 
 import { dijkstra } from './dijkstra';
 

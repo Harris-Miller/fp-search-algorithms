@@ -1,6 +1,5 @@
-import { last, toString } from 'ramda';
-
 import { createPath } from '../utils/createPath';
+import { getHash } from '../utils/hashing';
 import { priorityQueue } from '../utils/priorityQueue';
 
 export const aStarAssocTraversal = function* <T>(
@@ -8,27 +7,27 @@ export const aStarAssocTraversal = function* <T>(
   estimateRemainingCost: (n: T) => number,
   initial: T,
 ): Generator<[number, T[]]> {
-  const cameFrom = new Map<string, T>();
-  const initialS = toString(initial);
-  const gScore = new Map<string, number>([[initialS, 0]]);
-  const fScore = new Map<string, number>([[initialS, estimateRemainingCost(initial)]]);
+  const cameFrom = new Map<number, T>();
+  const initialS = getHash(initial);
+  const gScore = new Map<number, number>([[initialS, 0]]);
+  const fScore = new Map<number, number>([[initialS, estimateRemainingCost(initial)]]);
 
   const queue = priorityQueue((a: T, b: T) => {
-    const aScore = fScore.get(toString(a))!;
-    const bScore = fScore.get(toString(b))!;
+    const aScore = fScore.get(getHash(a))!;
+    const bScore = fScore.get(getHash(b))!;
     return aScore < bScore;
   });
   queue.push(initial);
 
   while (!queue.isEmpty()) {
     const current = queue.pop()!;
-    const currentS = toString(current);
+    const currentS = getHash(current);
 
     yield [gScore.get(currentS)!, createPath(cameFrom, current)];
 
     const nextStates = getNextStates(current);
     for (const [nextState, cost] of nextStates) {
-      const nextStateS = toString(nextState);
+      const nextStateS = getHash(nextState);
       const tentativeGScore = gScore.get(currentS)! + cost;
 
       if (tentativeGScore < (gScore.get(nextStateS) ?? Infinity)) {
@@ -77,7 +76,7 @@ export const aStarAssoc = <T>(
 ): [number, T[], T[]] | undefined => {
   const visited: T[] = [];
   for (const [value, pathTo] of aStarAssocTraversal(getNextStates, estimateRemainingCost, start)) {
-    const current = last(pathTo)!;
+    const current = pathTo[pathTo.length - 1];
     visited.push(current);
     if (determineIfFound(current)) return [value, pathTo, visited];
   }
@@ -110,7 +109,7 @@ export const aStar = <T>(
 ): [number, T[], T[]] | undefined => {
   const visited: T[] = [];
   for (const [value, pathTo] of aStarTraversal(getNextStates, getCost, estimateRemainingCost, initial)) {
-    const current = last(pathTo)!;
+    const current = pathTo[pathTo.length - 1];
     visited.push(current);
     if (determineIfFound(current)) return [value, pathTo, visited];
   }

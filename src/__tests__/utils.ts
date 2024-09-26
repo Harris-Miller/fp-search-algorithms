@@ -1,4 +1,4 @@
-import { max } from 'ramda';
+const max = (x: number, y: number): number => (y > x ? y : x);
 
 export const makeGrid = (s: string) => {
   const l = s.length;
@@ -41,3 +41,16 @@ export const getNeighbors4 = (s: string) => {
   ] as [number, number][];
   return ns.map(pointToStr);
 };
+
+/**
+ * Returns a function that always returns the given value. Note that for
+ * non-primitives the value returned is a reference to the original value.
+ *
+ * This function is known as `const`, `constant`, or `K` (for K combinator) in
+ * other languages and libraries.
+ */
+export const always =
+  <T>(val: T) =>
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  (..._args: unknown[]): T =>
+    val;

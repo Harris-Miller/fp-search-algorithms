@@ -18,10 +18,11 @@ const eslintConfig = [
       'no-continue': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/prefer-for-of': 'off',
     },
   },
   {
-    ignores: ['node_modules/', 'dist/'],
+    ignores: ['dist'],
   },
 ];
 

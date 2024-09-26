@@ -1,4 +1,4 @@
-import { toString } from 'ramda';
+import { getHash } from '../utils/hashing';
 
 /**
  * Performs a breadth-first traversal over a set of states.
@@ -10,14 +10,14 @@ import { toString } from 'ramda';
  * @param start
  */
 export const breadthFirstTraversal = function* <T>(next: (a: T) => T[], start: T): Generator<[T, T[]]> {
-  const visited = new Set<string>();
+  const visited = new Set<number>();
   // we queue a pair of values and the path through to get there
   const queue: [T, T[]][] = [[start, []]];
 
   while (queue.length) {
     const [value, pathSoFar] = queue.shift()!;
 
-    const asStr = toString(value);
+    const asStr = getHash(value);
     if (visited.has(asStr)) continue;
 
     yield [value, [...pathSoFar, value]];
@@ -27,7 +27,7 @@ export const breadthFirstTraversal = function* <T>(next: (a: T) => T[], start: T
     const nextPathSoFar = [...pathSoFar, value];
     queue.push(
       ...next(value)
-        .filter(v => !visited.has(toString(v)))
+        .filter(v => !visited.has(getHash(v)))
         .map(v => [v, nextPathSoFar] as [T, T[]]),
     );
   }

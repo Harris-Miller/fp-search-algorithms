@@ -1,60 +1,30 @@
 {
   "name": "fp-search-algorithms",
+  "type": "module",
   "version": "0.1.0",
+  "description": "Functional Programming Style Search Algorithms",
   "author": "Harris Miller <harrismillerconsulting@gmail.com>",
+  "keywords": [],
+  "license": "BSD-3-Clause",
   "main": "dist/index.cjs.js",
   "module": "dist/index.ems.js",
-  "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "@types/bun": "latest",
-    "eslint-config-harris": "^4.0.0",
-    "rollup": "^4.21.2"
-  },
-  "peerDependencies": {
-    "typescript": "^5.5.4"
-  },
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
-    },
-    "./aStar": {
-      "import": "./dist/aStar.js",
-      "require": "./dist/aStar.cjs",
-      "types": "./dist/aStar.d.ts"
-    },
-    "./bfs": {
-      "import": "./dist/breadthFirst.js",
-      "require": "./dist/breadthFirst.cjs",
-      "types": "./dist/breadthFirst.d.ts"
-    },
-    "./dfs": {
-      "import": "./dist/depthFirst.js",
-      "require": "./dist/depthFirst.cjs",
-      "types": "./dist/depthFirst.d.ts"
-    },
-    "./dijkstra": {
-      "import": "./dist/dijkstra.js",
-      "require": "./dist/dijkstra.cjs",
-      "types": "./dist/dijkstra.d.ts"
-    },
-    "./package.json": "./package.json"
-  },
-  "description": "Functional Programming Style Search Algorithms",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
   "files": [
     "dist"
   ],
-  "keywords": [],
-  "license": "BSD-3-Clause",
   "scripts": {
     "build": "rollup -c",
     "lint": "eslint .",
     "test": "bun test",
     "typecheck": "tsc -b"
   },
-  "sideEffects": false,
-  "type": "module",
-  "types": "dist/index.d.ts"
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/bun": "latest",
+    "eslint-config-harris": "^4.0.0",
+    "rollup": "^4.21.2",
+    "typescript": "^5.5.4"
+  }
 }

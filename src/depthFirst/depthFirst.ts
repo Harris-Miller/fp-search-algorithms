@@ -1,4 +1,4 @@
-import { getHash } from '../utils/hashing';
+import { toString } from 'ramda';
 
 /**
  * Performs a depth-first traversal over a set of states.
@@ -10,14 +10,14 @@ import { getHash } from '../utils/hashing';
  * @param initial
  */
 export const depthFirstTraversal = function* <T>(next: (a: T) => T[], start: T): Generator<[T, T[]]> {
-  const visited = new Set<number>();
+  const visited = new Set<string>();
   // we stack a pair of values and the path through to get there
   const stack: [T, T[]][] = [[start, []]];
 
   while (stack.length) {
     const [value, pathSoFar] = stack.pop()!;
 
-    const asStr = getHash(value);
+    const asStr = toString(value);
     if (visited.has(asStr)) continue;
 
     yield [value, [...pathSoFar, value]];
@@ -27,7 +27,7 @@ export const depthFirstTraversal = function* <T>(next: (a: T) => T[], start: T):
     const nextPathSoFar = [...pathSoFar, value];
     stack.push(
       ...next(value)
-        .filter(v => !visited.has(getHash(v)))
+        .filter(v => !visited.has(toString(v)))
         .map(v => [v, nextPathSoFar] as [T, T[]])
         .reverse(),
     );

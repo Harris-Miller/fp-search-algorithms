@@ -1,19 +1,18 @@
+import { toString } from 'ramda';
+
 import { createPath } from '../utils/createPath';
-import { getHash } from '../utils/hashing';
 import { priorityQueue } from '../utils/priorityQueue';
 
 export const dijkstraAssocTraversal = function* <T>(
   getNextStates: (state: T) => [T, number][],
   initial: T,
-): Generator<[number, T[]]> {
-  const prevMap = new Map<number, T>();
-  const costMap = new Map<number, number>([[getHash(initial), 0]]);
-
-  const visited = new Set<T>();
+): Generator<[totalCost: number, pathTo: T[]]> {
+  const prevMap = new Map<string, T>();
+  const costMap = new Map<string, number>([[toString(initial), 0]]);
 
   const queue = priorityQueue<T>((a: T, b: T) => {
-    const aCost = costMap.get(getHash(a)) ?? Infinity;
-    const bCost = costMap.get(getHash(b)) ?? Infinity;
+    const aCost = costMap.get(toString(a)) ?? Infinity;
+    const bCost = costMap.get(toString(b)) ?? Infinity;
     return aCost < bCost;
   });
 
@@ -21,17 +20,15 @@ export const dijkstraAssocTraversal = function* <T>(
 
   while (!queue.isEmpty()) {
     const current = queue.pop()!;
-    const currentS = getHash(current);
+    const currentS = toString(current);
 
     yield [costMap.get(currentS)!, createPath(prevMap, current)];
-
-    visited.add(current);
 
     const visitCost = costMap.get(currentS) ?? Infinity;
 
     const nextStates = getNextStates(current);
     for (const [nextState, nextCost] of nextStates) {
-      const nextStateS = getHash(nextState);
+      const nextStateS = toString(nextState);
       const altCost = visitCost + nextCost;
       if (altCost < (costMap.get(nextStateS) ?? Infinity)) {
         costMap.set(nextStateS, altCost);
@@ -48,7 +45,7 @@ export const dijkstraTraversal = function* <T>(
   getNextStates: (state: T) => T[],
   getCost: (from: T, to: T) => number,
   initial: T,
-): Generator<[number, T[]]> {
+): Generator<[totalCost: number, pathTo: T[]]> {
   const nextAssoc = (state: T) => getNextStates(state).map(n => [n, getCost(state, n)] as [T, number]);
   yield* dijkstraAssocTraversal(nextAssoc, initial);
 };
@@ -74,14 +71,14 @@ export const dijkstraAssoc = <T>(
   getNextStates: (state: T) => [T, number][],
   determineIfFound: (state: T) => boolean,
   initial: T,
-): [number, T[], T[]] | undefined => {
-  const visited: T[] = [];
+): [totalCost: number | undefined, pathTo: T[] | undefined, visits: T[]] => {
+  const visited = new Map<string, T>();
   for (const [value, pathTo] of dijkstraAssocTraversal(getNextStates, initial)) {
     const current = pathTo[pathTo.length - 1];
-    visited.push(current);
-    if (determineIfFound(current)) return [value, pathTo, visited];
+    visited.set(toString(current), current);
+    if (determineIfFound(current)) return [value, pathTo, [...visited.values()]];
   }
-  return undefined;
+  return [undefined, undefined, [...visited.values()]];
 };
 
 /**
@@ -104,7 +101,7 @@ export const dijkstra = <T>(
   getCost: (from: T, to: T) => number,
   determineIfFound: (state: T) => boolean,
   initial: T,
-): [number, T[], T[]] | undefined => {
+): [totalCost: number | undefined, pathTo: T[] | undefined, visits: T[]] => {
   const nextAssoc = (state: T) => getNextStates(state).map(n => [n, getCost(state, n)] as [T, number]);
   return dijkstraAssoc(nextAssoc, determineIfFound, initial);
 };

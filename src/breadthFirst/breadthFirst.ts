@@ -1,4 +1,4 @@
-import { getHash } from '../utils/hashing';
+import { toString } from 'ramda';
 
 /**
  * Performs a breadth-first traversal over a set of states.
@@ -9,15 +9,18 @@ import { getHash } from '../utils/hashing';
  * @param next
  * @param start
  */
-export const breadthFirstTraversal = function* <T>(next: (a: T) => T[], start: T): Generator<[T, T[]]> {
-  const visited = new Set<number>();
+export const breadthFirstTraversal = function* <T>(
+  next: (a: T) => T[],
+  start: T,
+): Generator<[visit: T, pathFromStart: T[]]> {
+  const visited = new Set<string>();
   // we queue a pair of values and the path through to get there
   const queue: [T, T[]][] = [[start, []]];
 
   while (queue.length) {
     const [value, pathSoFar] = queue.shift()!;
 
-    const asStr = getHash(value);
+    const asStr = toString(value);
     if (visited.has(asStr)) continue;
 
     yield [value, [...pathSoFar, value]];
@@ -27,7 +30,7 @@ export const breadthFirstTraversal = function* <T>(next: (a: T) => T[], start: T
     const nextPathSoFar = [...pathSoFar, value];
     queue.push(
       ...next(value)
-        .filter(v => !visited.has(getHash(v)))
+        .filter(v => !visited.has(toString(v)))
         .map(v => [v, nextPathSoFar] as [T, T[]]),
     );
   }
@@ -43,13 +46,13 @@ export const breadthFirstTraversal = function* <T>(next: (a: T) => T[], start: T
  * @param next - Function to generate "next" states given a current state
  * @param found - Predicate to determine if solution found. `bfs` returns a path to the first state for which this predicate returns `true`.
  * @param start - Initial state
- * @returns First path found to a state matching the predicate, or `null` if no such path exists.
+ * @returns First path found to a state matching the predicate, `undefined` if no such path exists.
  */
 export const breadthFirstSearch = <T>(
   next: (state: T) => T[],
   found: (state: T) => boolean,
   start: T,
-): [T, T[], T[]] | undefined => {
+): [foundState: T, pathTo: T[], visited: T[]] | undefined => {
   const visited: T[] = [];
   for (const [value, pathTo] of breadthFirstTraversal(next, start)) {
     visited.push(value);

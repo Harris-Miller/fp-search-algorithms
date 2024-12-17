@@ -1,12 +1,13 @@
-import { getHash } from './hashing';
+import { toString } from 'ramda';
+// import { getHash } from './hashing';
 
 /** @internal */
-export const createPath = <T>(prevMap: Map<number, T>, final: T) => {
+export const createPath = <T>(prevMap: Map<string, T>, final: T) => {
   const path: T[] = [final];
-  let prev = prevMap.get(getHash(final));
+  let prev = prevMap.get(toString(final));
   while (prev != null) {
     path.unshift(prev);
-    prev = prevMap.get(getHash(prev));
+    prev = prevMap.get(toString(prev));
   }
   return path;
 };

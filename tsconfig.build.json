@@ -2,10 +2,8 @@
   "compilerOptions": {
     // Enable latest features
     "lib": [
-      "ESNext"
-    ],
-    "types": [
-      "bun"
+      "ESNext",
+      "DOM"
     ],
     "target": "ESNext",
     "module": "ESNext",
@@ -19,12 +17,12 @@
     "strict": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
-    // Some stricter flags (disabled by default)
+    // rollup
+    "declaration": true,
+    // Some stricter flags
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false,
-    // rollup
-    "declaration": true
+    "noPropertyAccessFromIndexSignature": true,
   },
   "include": [
     "src",

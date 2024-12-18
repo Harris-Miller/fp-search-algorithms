@@ -78,7 +78,3 @@ export class PriorityQueue<T> {
     }
   }
 }
-
-export const priorityQueue = <T>(comparator: (a: T, b: T) => boolean) => {
-  return new PriorityQueue(comparator);
-};

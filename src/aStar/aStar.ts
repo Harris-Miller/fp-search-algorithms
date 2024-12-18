@@ -1,40 +1,36 @@
-import { toString } from 'ramda';
-
+import { Dict } from '../structures/dict';
+import { PriorityQueue } from '../structures/priorityQueue';
 import { createPath } from '../utils/createPath';
-import { priorityQueue } from '../utils/priorityQueue';
 
 export const aStarAssocTraversal = function* <T>(
   getNextStates: (n: T) => [T, number][],
   estimateRemainingCost: (n: T) => number,
   initial: T,
 ): Generator<[number, T[]]> {
-  const cameFrom = new Map<string, T>();
-  const initialS = toString(initial);
-  const gScore = new Map<string, number>([[initialS, 0]]);
-  const fScore = new Map<string, number>([[initialS, estimateRemainingCost(initial)]]);
+  const cameFrom = new Dict<T, T>();
+  const gScore = new Dict<T, number>().set(initial, 0);
+  const fScore = new Dict<T, number>().set(initial, estimateRemainingCost(initial));
 
-  const queue = priorityQueue((a: T, b: T) => {
-    const aScore = fScore.get(toString(a))!;
-    const bScore = fScore.get(toString(b))!;
+  const queue = new PriorityQueue((a: T, b: T) => {
+    const aScore = fScore.get(a)!;
+    const bScore = fScore.get(b)!;
     return aScore < bScore;
   });
   queue.push(initial);
 
   while (!queue.isEmpty()) {
     const current = queue.pop()!;
-    const currentS = toString(current);
 
-    yield [gScore.get(currentS)!, createPath(cameFrom, current)];
+    yield [gScore.get(current)!, createPath(cameFrom, current)];
 
     const nextStates = getNextStates(current);
     for (const [nextState, cost] of nextStates) {
-      const nextStateS = toString(nextState);
-      const tentativeGScore = gScore.get(currentS)! + cost;
+      const tentativeGScore = gScore.get(current)! + cost;
 
-      if (tentativeGScore < (gScore.get(nextStateS) ?? Infinity)) {
-        cameFrom.set(nextStateS, current);
-        gScore.set(nextStateS, tentativeGScore);
-        fScore.set(nextStateS, tentativeGScore + estimateRemainingCost(nextState));
+      if (tentativeGScore < (gScore.get(nextState) ?? Infinity)) {
+        cameFrom.set(nextState, current);
+        gScore.set(nextState, tentativeGScore);
+        fScore.set(nextState, tentativeGScore + estimateRemainingCost(nextState));
         queue.push(nextState);
       }
     }

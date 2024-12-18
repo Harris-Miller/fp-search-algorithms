@@ -1,4 +1,4 @@
-import { toString } from 'ramda';
+import { DSet } from '../structures/dSet';
 
 /**
  * Performs a breadth-first traversal over a set of states.
@@ -13,24 +13,23 @@ export const breadthFirstTraversal = function* <T>(
   next: (a: T) => T[],
   start: T,
 ): Generator<[visit: T, pathFromStart: T[]]> {
-  const visited = new Set<string>();
+  const visited = new DSet<T>();
   // we queue a pair of values and the path through to get there
   const queue: [T, T[]][] = [[start, []]];
 
   while (queue.length) {
     const [value, pathSoFar] = queue.shift()!;
 
-    const asStr = toString(value);
-    if (visited.has(asStr)) continue;
+    if (visited.has(value)) continue;
 
     yield [value, [...pathSoFar, value]];
 
-    visited.add(asStr);
+    visited.add(value);
 
     const nextPathSoFar = [...pathSoFar, value];
     queue.push(
       ...next(value)
-        .filter(v => !visited.has(toString(v)))
+        .filter(v => !visited.has(v))
         .map(v => [v, nextPathSoFar] as [T, T[]]),
     );
   }

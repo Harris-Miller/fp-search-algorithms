@@ -1,18 +1,19 @@
 {
   "name": "fp-search-algorithms",
-  "type": "module",
   "version": "0.3.0",
-  "description": "Functional Programming Style Search Algorithms",
   "author": "Harris Miller <harrismillerconsulting@gmail.com>",
-  "keywords": [],
-  "license": "BSD-3-Clause",
-  "sideEffects": false,
-  "files": [
-    "dist"
-  ],
   "main": "dist/index.cjs",
   "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/bun": "latest",
+    "@types/ramda": "^0.30.2",
+    "eslint-config-harris": "^4.2.1",
+    "ramda": "^0.30.1",
+    "rollup": "^4.28.1",
+    "typescript": "^5.7.2"
+  },
   "exports": {
     "./package.json": "./package.json",
     ".": {
@@ -21,22 +22,19 @@
       "types": "./dist/index.d.ts"
     }
   },
+  "description": "Functional Programming Style Search Algorithms",
+  "files": [
+    "dist"
+  ],
+  "keywords": [],
+  "license": "BSD-3-Clause",
   "scripts": {
     "build": "rollup -c",
     "lint": "eslint .",
     "test": "bun test",
     "typecheck": "tsc"
   },
-  "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "@types/bun": "latest",
-    "eslint-config-harris": "^4.0.0",
-    "rollup": "^4.21.2",
-    "typescript": "^5.5.4"
-  },
-  "dependencies": {
-    "@types/ramda": "^0.30.2",
-    "ramda": "^0.30.1"
-  }
+  "sideEffects": false,
+  "type": "module",
+  "types": "dist/index.d.ts"
 }

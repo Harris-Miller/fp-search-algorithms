@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
 import { describe, expect, test } from 'bun:test';
 
 import { depthFirstSearch, depthFirstTraversal } from './depthFirst';
@@ -29,7 +28,9 @@ describe('depth first search', () => {
   test('generator function', () => {
     const next = ({ children }: Tree<string>) => children;
 
-    const genResults = [...depthFirstTraversal(next, tree)].map(x => x[0].value);
+    const genResults = depthFirstTraversal(next, tree)
+      .map(x => x[0].value)
+      .toArray();
 
     expect(genResults).toEqual(['1', '11', '111', '112', '12', '121', '122']);
   });

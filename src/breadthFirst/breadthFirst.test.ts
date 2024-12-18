@@ -1,7 +1,9 @@
-// eslint-disable-next-line import/no-unresolved
 import { describe, expect, test } from 'bun:test';
 
 import { getNeighbors4, makeGrid } from '../__tests__/utils';
+import type { Point } from '../__tests__/utils';
+import { DSet } from '../structures/dSet';
+import { isEqual } from '../utils/isEqual';
 
 import { breadthFirstSearch, breadthFirstTraversal } from './breadthFirst';
 
@@ -11,8 +13,6 @@ describe('breadth first', () => {
 
     const results: string[] = [];
     for (const [value] of breadthFirstTraversal(next, '1')) {
-      // false-positive
-
       results.push(value);
       if (value === '122') break;
     }
@@ -31,16 +31,21 @@ describe('breadth first', () => {
 
   test('cheese search', async () => {
     const url = new URL('./cheeseSearch.txt', import.meta.url);
-    // @ts-expect-error - false positive
     const contents = await Bun.file(url).text();
     const grid = makeGrid(contents);
-    const walls = new Set([...grid].filter(([, v]: [string, string]) => v === '#').map(([k]: [string, string]) => k));
-    const [start, end] = [...grid]
-      .filter(([, v]: [string, string]) => v === '0' || v === '7')
-      .map(([k]: [string, string]) => k);
+    const walls = new DSet(
+      grid
+        .entries()
+        .filter(([, v]) => v === '#')
+        .map(([k]) => k),
+    );
+    const [start, end] = grid
+      .entries()
+      .filter(([, v]) => v === '0' || v === '7')
+      .map(([k]) => k);
 
-    const next = (s: string) => getNeighbors4(s).filter(x => !walls.has(x));
-    const found = (s: string) => s === end;
+    const next = (p: Point) => getNeighbors4(p).filter(x => !walls.has(x));
+    const found = (p: Point) => isEqual(p, end);
 
     const result = breadthFirstSearch(next, found, start);
 

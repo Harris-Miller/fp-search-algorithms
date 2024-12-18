@@ -1,18 +1,19 @@
 import { toString } from 'ramda';
 
+import { Dict } from '../structures/dict';
+import { PriorityQueue } from '../structures/priorityQueue';
 import { createPath } from '../utils/createPath';
-import { priorityQueue } from '../utils/priorityQueue';
 
 export const dijkstraAssocTraversal = function* <T>(
   getNextStates: (state: T) => [T, number][],
   initial: T,
 ): Generator<[totalCost: number, pathTo: T[]]> {
-  const prevMap = new Map<string, T>();
-  const costMap = new Map<string, number>([[toString(initial), 0]]);
+  const prevMap = new Dict<T, T>();
+  const costMap = new Dict<T, number>().set(initial, 0);
 
-  const queue = priorityQueue<T>((a: T, b: T) => {
-    const aCost = costMap.get(toString(a)) ?? Infinity;
-    const bCost = costMap.get(toString(b)) ?? Infinity;
+  const queue = new PriorityQueue<T>((a: T, b: T) => {
+    const aCost = costMap.get(a) ?? Infinity;
+    const bCost = costMap.get(b) ?? Infinity;
     return aCost < bCost;
   });
 
@@ -20,19 +21,17 @@ export const dijkstraAssocTraversal = function* <T>(
 
   while (!queue.isEmpty()) {
     const current = queue.pop()!;
-    const currentS = toString(current);
 
-    yield [costMap.get(currentS)!, createPath(prevMap, current)];
+    yield [costMap.get(current)!, createPath(prevMap, current)];
 
-    const visitCost = costMap.get(currentS) ?? Infinity;
+    const visitCost = costMap.get(current) ?? Infinity;
 
     const nextStates = getNextStates(current);
     for (const [nextState, nextCost] of nextStates) {
-      const nextStateS = toString(nextState);
       const altCost = visitCost + nextCost;
-      if (altCost < (costMap.get(nextStateS) ?? Infinity)) {
-        costMap.set(nextStateS, altCost);
-        prevMap.set(nextStateS, current);
+      if (altCost < (costMap.get(nextState) ?? Infinity)) {
+        costMap.set(nextState, altCost);
+        prevMap.set(nextState, current);
         queue.push(nextState);
       }
     }

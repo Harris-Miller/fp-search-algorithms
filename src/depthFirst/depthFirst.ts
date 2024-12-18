@@ -1,4 +1,4 @@
-import { toString } from 'ramda';
+import { DSet } from '../structures/dSet';
 
 /**
  * Performs a depth-first traversal over a set of states.
@@ -10,24 +10,23 @@ import { toString } from 'ramda';
  * @param initial
  */
 export const depthFirstTraversal = function* <T>(next: (a: T) => T[], start: T): Generator<[T, T[]]> {
-  const visited = new Set<string>();
+  const visited = new DSet<T>();
   // we stack a pair of values and the path through to get there
   const stack: [T, T[]][] = [[start, []]];
 
   while (stack.length) {
     const [value, pathSoFar] = stack.pop()!;
 
-    const asStr = toString(value);
-    if (visited.has(asStr)) continue;
+    if (visited.has(value)) continue;
 
     yield [value, [...pathSoFar, value]];
 
-    visited.add(asStr);
+    visited.add(value);
 
     const nextPathSoFar = [...pathSoFar, value];
     stack.push(
       ...next(value)
-        .filter(v => !visited.has(toString(v)))
+        .filter(v => !visited.has(v))
         .map(v => [v, nextPathSoFar] as [T, T[]])
         .reverse(),
     );

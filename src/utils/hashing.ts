@@ -1,20 +1,24 @@
-/* eslint-disable @typescript-eslint/no-use-before-define, complexity, no-bitwise, no-plusplus */
+/* eslint-disable no-param-reassign */
+/* eslint-disable @typescript-eslint/no-use-before-define */
 
+/* eslint-disable complexity */
+/* eslint-disable no-bitwise */
+/* eslint-disable no-plusplus */
+/* eslint-disable prefer-arrow/prefer-arrow-functions */
+/* eslint-disable func-style */
 //
-// Blatantly stolen from https://github.com/gleam-lang/stdlib/blob/main/src/dict.mjs
+// Credit to: https://github.com/gleam-lang/stdlib/blob/main/src/dict.mjs
+// Ported to typescript
 //
 
 const referenceMap = new WeakMap<WeakKey, number>();
 const tempDataView = new DataView(new ArrayBuffer(8));
 let referenceUID = 0;
-
 /**
  * hash the object by reference using a weak map and incrementing uid
- * @param {any} obj
- * @returns {number}
  */
-const hashByReference = (obj: object | symbol): number => {
-  const known = referenceMap.get(obj);
+function hashByReference(o: WeakKey): number {
+  const known = referenceMap.get(o);
   if (known !== undefined) {
     return known;
   }
@@ -22,114 +26,96 @@ const hashByReference = (obj: object | symbol): number => {
   if (referenceUID === 0x7fffffff) {
     referenceUID = 0;
   }
-  referenceMap.set(obj, hash);
+  referenceMap.set(o, hash);
   return hash;
-};
+}
 
 /**
  * merge two hashes in an order sensitive way
- * @param {number} a
- * @param {number} b
- * @returns {number}
  */
-const hashMerge = (a: number, b: number): number => (a ^ (b + 0x9e3779b9 + (a << 6) + (a >> 2))) | 0;
+export function hashMerge(a: number, b: number): number {
+  return (a ^ (b + 0x9e3779b9 + (a << 6) + (a >> 2))) | 0;
+}
 
 /**
- * standard string hash popularised by java
- * @param {string} str
- * @returns {number}
+ * standard string hash popularized by java
  */
-const hashString = (str: string): number => {
+function hashString(s: string): number {
   let hash = 0;
-  const len = str.length;
+  const len = s.length;
   for (let i = 0; i < len; i++) {
-    hash = (Math.imul(31, hash) + str.charCodeAt(i)) | 0;
+    hash = (Math.imul(31, hash) + s.charCodeAt(i)) | 0;
   }
   return hash;
-};
+}
 
 /**
  * hash a number by converting to two integers and do some jumbling
- * @param {number} num
- * @returns {number}
  */
-const hashNumber = (num: number): number => {
-  tempDataView.setFloat64(0, num);
+function hashNumber(n: number): number {
+  tempDataView.setFloat64(0, n);
   const i = tempDataView.getInt32(0);
   const j = tempDataView.getInt32(4);
   return Math.imul(0x45d9f3b, (i >> 16) ^ i) ^ j;
-};
+}
 
 /**
  * hash a BigInt by converting it to a string and hashing that
- * @param {BigInt} num
- * @returns {number}
  */
-const hashBigInt = (num: bigint): number => hashString(num.toString());
+function hashBigInt(n: bigint): number {
+  return hashString(n.toString());
+}
 
 /**
  * hash any js object
- * @param {any} obj
- * @returns {number}
  */
-const hashObject = (obj: object): number => {
-  const proto = Object.getPrototypeOf(obj) as { hashCode?: (o: object) => number } | null;
+function hashObject(o: object): number {
+  const proto = Object.getPrototypeOf(o) as { hashCode: (v: unknown) => unknown } | null;
   if (proto !== null && typeof proto.hashCode === 'function') {
     try {
-      const code = (obj as { hashCode: (o: object) => number }).hashCode(obj);
+      const code = (o as { hashCode: (v: unknown) => unknown }).hashCode(o);
       if (typeof code === 'number') {
         return code;
       }
-    } catch {
-      // noop, try next if statement
-    }
+      // eslint-disable-next-line no-empty
+    } catch {}
   }
-
-  if (obj instanceof Promise || obj instanceof WeakSet || obj instanceof WeakMap) {
-    return hashByReference(obj);
+  if (o instanceof Promise || o instanceof WeakSet || o instanceof WeakMap) {
+    return hashByReference(o);
   }
-
-  if (obj instanceof Date) {
-    return hashNumber(obj.getTime());
+  if (o instanceof Date) {
+    return hashNumber(o.getTime());
   }
-
   let h = 0;
-  if (obj instanceof ArrayBuffer) {
-    // eslint-disable-next-line no-param-reassign
-    obj = new Uint8Array(obj);
+  if (o instanceof ArrayBuffer) {
+    o = new Uint8Array(o);
   }
-
-  if (Array.isArray(obj) || obj instanceof Uint8Array) {
-    for (let i = 0; i < obj.length; i++) {
-      h = (Math.imul(31, h) + getHash(obj[i])) | 0;
+  if (Array.isArray(o) || o instanceof Uint8Array) {
+    for (let i = 0; i < o.length; i++) {
+      h = (Math.imul(31, h) + getHash(o[i])) | 0;
     }
-  } else if (obj instanceof Set) {
-    obj.forEach(v => {
+  } else if (o instanceof Set) {
+    o.forEach(v => {
       h = (h + getHash(v)) | 0;
     });
-  } else if (obj instanceof Map) {
-    obj.forEach((v, k) => {
+  } else if (o instanceof Map) {
+    o.forEach((v, k) => {
       h = (h + hashMerge(getHash(v), getHash(k))) | 0;
     });
   } else {
-    const keys = Object.keys(obj);
+    const keys = Object.keys(o) as (keyof typeof o)[];
     for (let i = 0; i < keys.length; i++) {
       const k = keys[i];
-      // @ts-expect-error - k is not keyof obj
-      const v = obj[k] as unknown;
+      const v = o[k];
       h = (h + hashMerge(getHash(v), hashString(k))) | 0;
     }
   }
   return h;
-};
+}
 
 /**
  * hash any js value
- * @param {any} u
- * @returns {number}
  */
-// needs to be a function declaration, cyclical use in `hashObject`
-// eslint-disable-next-line func-style, prefer-arrow/prefer-arrow-functions
 export function getHash(u: unknown): number {
   if (u === null) return 0x42108422;
   if (u === undefined) return 0x42108423;
@@ -149,7 +135,6 @@ export function getHash(u: unknown): number {
     case 'function':
       return hashByReference(u);
     default:
-      // should be unreachable
-      return 0;
+      throw new Error('getHash - non-exhaustive switch statement');
   }
 }

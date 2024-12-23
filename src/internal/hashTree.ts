@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/unified-signatures */
-/* eslint-disable @typescript-eslint/prefer-return-this-type */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable line-comment-position */
 /* eslint-disable complexity */
@@ -7,13 +5,15 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable prefer-arrow/prefer-arrow-functions */
 /* eslint-disable func-style */
+
 //
 // Credit to: https://github.com/gleam-lang/stdlib/blob/main/src/dict.mjs
 // Ported to typescript
 //
 
-import { getHash, hashMerge } from '../utils/hashing';
 import { isEqual } from '../utils/isEqual';
+
+import { getHash } from './hashing';
 
 const SHIFT = 5; // number of bits you need to shift by to get the next bucket
 const BUCKET_SIZE = 2 ** SHIFT;
@@ -25,22 +25,26 @@ const ARRAY_NODE = 1;
 const INDEX_NODE = 2;
 const COLLISION_NODE = 3;
 
+/** @internal */
 export type Node<K, V> = ArrayNode<K, V> | CollisionNode<K, V> | IndexNode<K, V>;
-export type Entry<K, V> = { k: K; type: typeof ENTRY; v: V };
-export type ArrayNode<K, V> = {
+type Entry<K, V> = { k: K; type: typeof ENTRY; v: V };
+type ArrayNode<K, V> = {
   array: (Entry<K, V> | Node<K, V> | undefined)[];
   size: number;
   type: typeof ARRAY_NODE;
 };
+/** @internal */
 export type IndexNode<K, V> = { array: (Entry<K, V> | Node<K, V>)[]; bitmap: number; type: typeof INDEX_NODE };
-export type CollisionNode<K, V> = { array: Entry<K, V>[]; hash: number; type: typeof COLLISION_NODE };
-export type Flag = { val: boolean };
+type CollisionNode<K, V> = { array: Entry<K, V>[]; hash: number; type: typeof COLLISION_NODE };
+type Flag = { val: boolean };
 
-const EMPTY: IndexNode<unknown, unknown> = {
+/** @internal */
+export const EMPTY: IndexNode<unknown, unknown> = {
   array: [],
   bitmap: 0,
   type: INDEX_NODE,
 };
+
 /**
  * Mask the hash to get only the bucket corresponding to shift
  */
@@ -151,19 +155,18 @@ function createNode<K, V>(shift: number, key1: K, val1: V, key2hash: number, key
   );
 }
 
-export type AssocFunction<T, K, V> = (
-  root: T,
+/**
+ * Associate a node with a new entry, creating a new node
+ * @internal
+ */
+export function assoc<K, V>(
+  root: Node<K, V>,
   shift: number,
   hash: number,
   key: K,
   val: V,
   addedLeaf: Flag,
-) => Node<K, V>;
-
-/**
- * Associate a node with a new entry, creating a new node
- */
-function assoc<K, V>(root: Node<K, V>, shift: number, hash: number, key: K, val: V, addedLeaf: Flag): Node<K, V> {
+): Node<K, V> {
   switch (root.type) {
     case ARRAY_NODE:
       return assocArray(root, shift, hash, key, val, addedLeaf);
@@ -392,8 +395,9 @@ function collisionIndexOf<K, V>(root: CollisionNode<K, V>, key: K): number {
 
 /**
  * Return the found entry or undefined if not present in the root
+ * @internal
  */
-function find<K, V>(root: Node<K, V>, shift: number, hash: number, key: K): Entry<K, V> | undefined {
+export function find<K, V>(root: Node<K, V>, shift: number, hash: number, key: K): Entry<K, V> | undefined {
   switch (root.type) {
     case ARRAY_NODE:
       return findArray(root, shift, hash, key);
@@ -448,8 +452,9 @@ function findCollision<K, V>(root: CollisionNode<K, V>, key: K): Entry<K, V> | u
 /**
  * Remove an entry from the root, returning the updated root.
  * Returns undefined if the node should be removed from the parent.
+ * @internal
  */
-function without<K, V>(root: Node<K, V>, shift: number, hash: number, key: K): Node<K, V> | undefined {
+export function without<K, V>(root: Node<K, V>, shift: number, hash: number, key: K): Node<K, V> | undefined {
   switch (root.type) {
     case ARRAY_NODE:
       return withoutArray(root, shift, hash, key);
@@ -575,7 +580,8 @@ function withoutIndex<K, V>(root: IndexNode<K, V>, shift: number, hash: number, 
   return root;
 }
 
-function withoutCollision<K, V>(root: CollisionNode<K, V>, key: K): Node<K, V> | undefined {
+/** @internal */
+export function withoutCollision<K, V>(root: CollisionNode<K, V>, key: K): Node<K, V> | undefined {
   const idx = collisionIndexOf(root, key);
   // if the key not found, no changes
   if (idx < 0) {
@@ -594,7 +600,8 @@ function withoutCollision<K, V>(root: CollisionNode<K, V>, key: K): Node<K, V> |
   };
 }
 
-function forEach<K, V>(root: Node<K, V> | undefined, fn: (value: V, key: K) => void): void {
+/** @internal */
+export function forEach<K, V>(root: Node<K, V> | undefined, fn: (value: V, key: K) => void): void {
   if (root === undefined) {
     return;
   }
@@ -613,201 +620,9 @@ function forEach<K, V>(root: Node<K, V> | undefined, fn: (value: V, key: K) => v
   }
 }
 
-function toArray<K, V>(root: Node<K, V> | undefined): [K, V][] {
+/** @internal */
+export function toArray<K, V>(root: Node<K, V> | undefined): [K, V][] {
   const array: [K, V][] = [];
   forEach(root, (v, k) => array.push([k, v]));
   return array;
 }
-
-/**
- * An implementation of the native Map, but with deep-equality key comparison
- * API compatible with native Map, with exception of constructor
- * IN addition, a static Dict.from() function allows for additional conversions including objects and Maps
- */
-export class Dict<K, V> implements Iterable<[K, V]> {
-  /**
-   * A function constructor that handles an EntriesArray, Object, or native Map
-   */
-  static from<K, V>(): Dict<K, V>;
-  static from<V>(object: Record<string, V>): Dict<string, V>;
-  static from<K, V>(map: Map<K, V>): Dict<string, V>;
-
-  static from<K, V>(entries: Iterable<readonly [K, V]>): Dict<string, V>;
-  static from<K, V>(oneOfThem?: unknown): Dict<K, V> {
-    if (oneOfThem == null) {
-      return new Dict<K, V>();
-    }
-
-    if (oneOfThem instanceof Map) {
-      const dict = new Dict<K, V>();
-      (oneOfThem as Map<K, V>).forEach((v, k) => {
-        dict.set(k, v);
-      });
-      return dict;
-    }
-
-    if (Array.isArray(oneOfThem)) {
-      return new Dict<K, V>(oneOfThem);
-    }
-
-    // else isObject
-    const keys = Object.keys(oneOfThem as Record<string, V>);
-    const dict = new Dict<string, V>();
-    for (let i = 0; i < keys.length; i++) {
-      const k = keys[i];
-      dict.set(k, (oneOfThem as Record<string, V>)[k]);
-    }
-    return dict as Dict<K, V>;
-  }
-
-  static groupBy<K, V>(items: Iterable<V>, keySelector: (item: V, index: number) => K): Dict<K, V[]> {
-    const dict = new Dict<K, V[]>();
-    let i = 0;
-    for (const val of items) {
-      const key = keySelector(val, i);
-      if (!dict.has(key)) {
-        dict.set(key, []);
-      }
-      dict.get(key)!.push(val);
-      ++i;
-    }
-    return dict;
-  }
-
-  private root: Node<K, V> | undefined;
-  private sizeInternal: number;
-
-  constructor();
-  constructor(iterable: Iterable<readonly [K, V]> | null);
-  constructor(iterable?: Iterable<readonly [K, V]> | null) {
-    this.root = undefined;
-    this.sizeInternal = 0;
-    if (iterable != null) {
-      for (const [k, v] of iterable) {
-        this.set(k, v);
-      }
-    }
-  }
-
-  //
-  // Map API
-  //
-
-  clear(): void {
-    this.root = undefined;
-    this.sizeInternal = 0;
-  }
-
-  delete(key: K): boolean {
-    if (this.root === undefined) {
-      return false;
-    }
-    const newRoot = without(this.root, 0, getHash(key), key);
-    if (newRoot === this.root) {
-      return false;
-    }
-    if (newRoot === undefined) {
-      return false;
-    }
-    this.root = newRoot;
-    this.sizeInternal -= 1;
-
-    const m = new Map();
-    m.entries();
-
-    return true;
-  }
-
-  entries() {
-    return Iterator.from(toArray(this.root));
-  }
-
-  forEach(fn: (val: V, key: K) => void) {
-    forEach(this.root, fn);
-  }
-
-  get(key: K): V | undefined {
-    if (this.root === undefined) {
-      return undefined;
-    }
-    const found = find(this.root, 0, getHash(key), key);
-    if (found === undefined) {
-      return undefined;
-    }
-    return found.v;
-  }
-
-  has(key: K): boolean {
-    if (this.root === undefined) {
-      return false;
-    }
-    return find(this.root, 0, getHash(key), key) !== undefined;
-  }
-
-  keys() {
-    return this.entries().map(([k]) => k);
-  }
-
-  set(key: K, val: V): Dict<K, V> {
-    const addedLeaf = { val: false };
-    const root = this.root ?? (EMPTY as IndexNode<K, V>);
-    const newRoot = assoc(root, 0, getHash(key), key, val, addedLeaf);
-    if (newRoot === this.root) {
-      return this;
-    }
-    this.root = newRoot;
-    this.sizeInternal = addedLeaf.val ? this.sizeInternal + 1 : this.sizeInternal;
-    return this;
-  }
-
-  values() {
-    return this.entries().map(([, v]) => v);
-  }
-
-  get size(): number {
-    return this.sizeInternal;
-  }
-
-  hashCode(): number {
-    let h = 0;
-    this.forEach((v, k) => {
-      h = (h + hashMerge(getHash(v), getHash(k))) | 0;
-    });
-    return h;
-  }
-
-  [Symbol.iterator]() {
-    return this.entries();
-  }
-
-  //
-  // Additional API
-  //
-
-  equals(o: Dict<K, V>): boolean {
-    if (!(o instanceof Dict) || this.sizeInternal !== o.sizeInternal) {
-      return false;
-    }
-
-    try {
-      this.forEach((v, k) => {
-        if (!isEqual(o.get(k), v)) {
-          // eslint-disable-next-line @typescript-eslint/only-throw-error
-          throw unequalDictSymbol;
-        }
-      });
-      return true;
-    } catch (e) {
-      if (e === unequalDictSymbol) {
-        return false;
-      }
-
-      throw e;
-    }
-  }
-}
-
-// This is thrown internally in Dict.equals() so that it returns false as soon
-// as a non-matching key is found
-// eslint-disable-next-line symbol-description
-const unequalDictSymbol = Symbol();

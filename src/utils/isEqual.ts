@@ -1,19 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable complexity */
-
-const getters: {
-  <K, V>(map: Map<K, V>): [keys: (map: Map<K, V>) => K[], get: (map: Map<K, V>, k: K) => V];
-  <V>(
-    object: Record<string, V>,
-  ): [keys: (map: Record<string, V>) => string[], get: (map: Record<string, V>, k: string) => V];
-} = <V>(object: Map<unknown, V> | Record<string, V>) => {
-  if (object instanceof Map) {
-    return [(x: Map<unknown, V>) => x.keys(), (x: Map<unknown, V>, y: unknown) => x.get(y)] as any;
-  }
-  const extra = object instanceof globalThis.Error ? ['message'] : [];
-  return [(x: Record<string, V>) => [...extra, ...Object.keys(x)], (x: Record<string, V>, y: string) => x[y]] as any;
-};
 
 const unequalDates = (a: Date, b: Date) => {
   return a instanceof Date && (a > b || a < b);
@@ -57,8 +42,13 @@ const structurallyCompatibleObjects = (a: object, b: object) => {
   return a.constructor === b.constructor;
 };
 
+/**
+ * Deep equality check
+ * @public
+ * @category Utils
+ */
 export const isEqual = <T>(x: T, y: T) => {
-  const values: T[] = [x, y];
+  const values: unknown[] = [x, y];
 
   while (values.length) {
     const a = values.pop();
@@ -79,18 +69,24 @@ export const isEqual = <T>(x: T, y: T) => {
     const proto = Object.getPrototypeOf(a) as { equals?: (o: T) => boolean } | null;
     if (proto !== null && typeof proto.equals === 'function') {
       try {
-        if ((a as unknown as { equals: (o: T) => boolean }).equals(b)) continue;
+        if ((a as { equals: (o: unknown) => boolean }).equals(b)) continue;
         else return false;
         // eslint-disable-next-line no-empty
       } catch {}
     }
 
-    // @ts-expect-error
-    const [keys, get] = getters(a);
-    // @ts-expect-error
-    for (const k of keys(a)) {
-      // @ts-expect-error
-      values.push(get(a, k), get(b, k));
+    if (a instanceof Map) {
+      if (!(b instanceof Map)) return false;
+      for (const k of a.keys()) {
+        values.push(a.get(k), b.get(k));
+      }
+    } else {
+      // assume a and b are objects
+      const extra = a instanceof globalThis.Error ? ['message'] : [];
+      for (const k of [...extra, ...Object.keys(a)]) {
+        // @ts-expect-error
+        values.push(a[k], b[k]);
+      }
     }
   }
 

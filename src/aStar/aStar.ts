@@ -1,15 +1,24 @@
-import { Dict } from '../structures/dict';
+import { createPath } from '../internal/createPath';
+import { HashMap } from '../structures/hashMap';
 import { PriorityQueue } from '../structures/priorityQueue';
-import { createPath } from '../utils/createPath';
 
+/**
+ *
+ * @public
+ * @category AStar
+ * @param getNextStates
+ * @param estimateRemainingCost
+ * @param initial
+ * @returns
+ */
 export const aStarAssocTraversal = function* <T>(
   getNextStates: (n: T) => [T, number][],
   estimateRemainingCost: (n: T) => number,
   initial: T,
 ): Generator<[number, T[]]> {
-  const cameFrom = new Dict<T, T>();
-  const gScore = new Dict<T, number>().set(initial, 0);
-  const fScore = new Dict<T, number>().set(initial, estimateRemainingCost(initial));
+  const cameFrom = new HashMap<T, T>();
+  const gScore = new HashMap<T, number>().set(initial, 0);
+  const fScore = new HashMap<T, number>().set(initial, estimateRemainingCost(initial));
 
   const queue = new PriorityQueue((a: T, b: T) => {
     const aScore = fScore.get(a)!;
@@ -39,6 +48,15 @@ export const aStarAssocTraversal = function* <T>(
   return undefined;
 };
 
+/**
+ *
+ * @public
+ * @category AStar
+ * @param getNextStates
+ * @param getCost
+ * @param estimateRemainingCost
+ * @param initial
+ */
 export const aStarTraversal = function* <T>(
   getNextStates: (n: T) => T[],
   getCost: (a: T, b: T) => number,
@@ -59,6 +77,7 @@ export const aStarTraversal = function* <T>(
  * shortest path. Returns 'Nothing' if no path to a solved state is possible.
  *
  * @public
+ * @category AStar
  * @param getNextStates - Function to generate list of neighboring states with associated transition costs given the current state
  * @param estimateRemainingCost - Estimate on remaining cost given a state
  * @param determineIfFound - Predicate to determine if solution found. `aStar` returns the shortest path to the first state for which this predicate returns `true`
@@ -90,6 +109,7 @@ export const aStarAssoc = <T>(
  * shortest path. Returns `undefined` if no path to a solved state is possible.
  *
  * @public
+ * @category AStar
  * @param getNextStates - Function to generate list of neighboring states given the current state
  * @param getCost - Function to generate transition costs between neighboring states
  * @param estimateRemainingCost - Estimate on remaining cost given a state

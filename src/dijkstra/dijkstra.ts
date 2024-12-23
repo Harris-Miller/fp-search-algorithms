@@ -1,15 +1,21 @@
-import { toString } from 'ramda';
-
-import { Dict } from '../structures/dict';
+import { createPath } from '../internal/createPath';
+import { HashMap } from '../structures/hashMap';
 import { PriorityQueue } from '../structures/priorityQueue';
-import { createPath } from '../utils/createPath';
 
+/**
+ *
+ * @public
+ * @category Dijkstra
+ * @param getNextStates
+ * @param initial
+ * @returns
+ */
 export const dijkstraAssocTraversal = function* <T>(
   getNextStates: (state: T) => [T, number][],
   initial: T,
 ): Generator<[totalCost: number, pathTo: T[]]> {
-  const prevMap = new Dict<T, T>();
-  const costMap = new Dict<T, number>().set(initial, 0);
+  const prevMap = new HashMap<T, T>();
+  const costMap = new HashMap<T, number>().set(initial, 0);
 
   const queue = new PriorityQueue<T>((a: T, b: T) => {
     const aCost = costMap.get(a) ?? Infinity;
@@ -40,6 +46,14 @@ export const dijkstraAssocTraversal = function* <T>(
   return undefined;
 };
 
+/**
+ *
+ * @public
+ * @category Dijkstra
+ * @param getNextStates
+ * @param getCost
+ * @param initial
+ */
 export const dijkstraTraversal = function* <T>(
   getNextStates: (state: T) => T[],
   getCost: (from: T, to: T) => number,
@@ -61,6 +75,7 @@ export const dijkstraTraversal = function* <T>(
  * back into the desired result from `dijkstraAssoc`
  *
  * @public
+ * @category Dijkstra
  * @param getNextStates - function to generate list of neighboring states with associated transition costs given the current state
  * @param determineIfFound - Predicate to determine if solution found. 'dijkstraAssoc' returns the shortest path to the first state for which this predicate returns `true`
  * @param initial - Initial state
@@ -70,14 +85,14 @@ export const dijkstraAssoc = <T>(
   getNextStates: (state: T) => [T, number][],
   determineIfFound: (state: T) => boolean,
   initial: T,
-): [totalCost: number | undefined, pathTo: T[] | undefined, visits: T[]] => {
-  const visited = new Map<string, T>();
+): [totalCost: number, pathTo: T[], visits: T[]] | undefined => {
+  const visited: T[] = [];
   for (const [value, pathTo] of dijkstraAssocTraversal(getNextStates, initial)) {
     const current = pathTo[pathTo.length - 1];
-    visited.set(toString(current), current);
-    if (determineIfFound(current)) return [value, pathTo, [...visited.values()]];
+    visited.push(current);
+    if (determineIfFound(current)) return [value, pathTo, visited];
   }
-  return [undefined, undefined, [...visited.values()]];
+  return undefined;
 };
 
 /**
@@ -89,6 +104,7 @@ export const dijkstraAssoc = <T>(
  * solved state is possible.
  *
  * @public
+ * @category Dijkstra
  * @param getNextStates - Function to generate list of neighboring states given the current state
  * @param getCost - Function to generate transition costs between neighboring states
  * @param determineIfFound - Predicate to determine if solution found. 'dijkstra' returns the shortest path to the first state for which this predicate returns `true`
@@ -100,7 +116,7 @@ export const dijkstra = <T>(
   getCost: (from: T, to: T) => number,
   determineIfFound: (state: T) => boolean,
   initial: T,
-): [totalCost: number | undefined, pathTo: T[] | undefined, visits: T[]] => {
+): [totalCost: number, pathTo: T[], visits: T[]] | undefined => {
   const nextAssoc = (state: T) => getNextStates(state).map(n => [n, getCost(state, n)] as [T, number]);
   return dijkstraAssoc(nextAssoc, determineIfFound, initial);
 };

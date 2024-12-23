@@ -1,7 +1,7 @@
-import type { Dict } from '../structures/dict';
+import type { HashMap } from '../structures/hashMap';
 
 /** @internal */
-export const createPath = <T>(prevMap: Dict<T, T>, final: T) => {
+export const createPath = <T>(prevMap: HashMap<T, T>, final: T) => {
   const path: T[] = [final];
   let prev = prevMap.get(final);
   while (prev != null) {

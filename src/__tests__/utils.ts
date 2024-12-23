@@ -1,4 +1,4 @@
-import { Dict } from '../structures/dict';
+import { HashMap } from '../structures/hashMap';
 
 export type Point = [number, number];
 
@@ -10,7 +10,7 @@ export const makeGrid = (s: string) => {
   let row = 0;
   let col = 0;
 
-  const results = new Dict<Point, string>();
+  const results = new HashMap<Point, string>();
 
   while (i < l) {
     const char = s.charAt(i);
@@ -27,7 +27,7 @@ export const makeGrid = (s: string) => {
   return results;
 };
 
-export const findMax = (grid: Dict<Point, string>) =>
+export const findMax = (grid: HashMap<Point, string>) =>
   grid.keys().reduce<[number, number]>(([mr, mc], [r, c]) => [max(mr, r), max(mc, c)] as [number, number], [0, 0]);
 
 export const getNeighbors4 = ([r, c]: Point): Point[] => [

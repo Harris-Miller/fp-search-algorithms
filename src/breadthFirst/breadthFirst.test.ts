@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 import { getNeighbors4, makeGrid } from '../__tests__/utils';
 import type { Point } from '../__tests__/utils';
-import { DSet } from '../structures/dSet';
+import { HashSet } from '../structures/hashSet';
 import { isEqual } from '../utils/isEqual';
 
 import { breadthFirstSearch, breadthFirstTraversal } from './breadthFirst';
@@ -33,7 +33,7 @@ describe('breadth first', () => {
     const url = new URL('./cheeseSearch.txt', import.meta.url);
     const contents = await Bun.file(url).text();
     const grid = makeGrid(contents);
-    const walls = new DSet(
+    const walls = new HashSet(
       grid
         .entries()
         .filter(([, v]) => v === '#')

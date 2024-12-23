@@ -8,6 +8,11 @@ const left = (i: number) => (i << 1) + 1;
 const right = (i: number) => (i + 1) << 1;
 /* eslint-enable no-bitwise */
 
+/**
+ *
+ * @public
+ * @category Structures
+ */
 export class PriorityQueue<T> {
   private heap: T[] = [];
 

@@ -22,7 +22,7 @@ const eslintConfig = [
     },
   },
   {
-    ignores: ['dist'],
+    ignores: ['dist', 'docs'],
   },
 ];
 

@@ -109,14 +109,9 @@ export class HashMap<K, V> implements Iterable<[K, V]> {
     if (newRoot === this.root) {
       return false;
     }
-    if (newRoot === undefined) {
-      return false;
-    }
+
     this.root = newRoot;
     this.sizeInternal -= 1;
-
-    const m = new Map();
-    m.entries();
 
     return true;
   }

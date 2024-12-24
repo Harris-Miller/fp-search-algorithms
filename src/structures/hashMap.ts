@@ -224,6 +224,7 @@ export class HashMap<K, V> implements Iterable<[K, V]> {
   }
 
   filter<S extends V>(predicate: (value: V, key: K) => value is S): HashMap<K, S>;
+  filter(predicate: (value: V, key: K) => boolean): HashMap<K, V>;
   filter(predicate: (value: V, key: K) => boolean): HashMap<K, V> {
     const dict = new HashMap<K, V>();
     this.forEach((v, k) => {
@@ -235,6 +236,7 @@ export class HashMap<K, V> implements Iterable<[K, V]> {
   }
 
   find<S extends V>(predicate: (value: V, key: K) => value is S): [K, S] | undefined;
+  find(predicate: (value: V, key: K) => boolean): [K, V] | undefined;
   find(predicate: (value: V, key: K) => boolean): [K, V] | undefined {
     for (const [k, v] of this.entries()) {
       if (predicate(v, k)) {
@@ -245,7 +247,6 @@ export class HashMap<K, V> implements Iterable<[K, V]> {
   }
 
   reduce(callbackFn: (accumulator: V, value: V, key: K) => V): V;
-  reduce(callbackFn: (accumulator: V, value: V, key: K) => V, initialValue: V): V;
   reduce<U>(callbackFn: (accumulator: U, value: V, key: K) => U, initialValue: U): U;
   reduce<U>(
     callbackFn: (accumulator: NonNullable<U>, value: V, key: K) => NonNullable<U>,

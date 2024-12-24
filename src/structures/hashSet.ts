@@ -162,6 +162,7 @@ export class HashSet<V> implements Iterable<V> {
   }
 
   filter<S extends V>(predicate: (value: V) => value is S): HashSet<S>;
+  filter(predicate: (value: V) => boolean): HashSet<V>;
   filter(predicate: (value: V) => boolean): HashSet<V> {
     const set = new HashSet<V>();
     this.forEach(v => {
@@ -173,6 +174,7 @@ export class HashSet<V> implements Iterable<V> {
   }
 
   find<S extends V>(predicate: (value: V) => value is S): S | undefined;
+  find(predicate: (value: V) => boolean): V | undefined;
   find(predicate: (value: V) => boolean): V | undefined {
     for (const v of this.values()) {
       if (predicate(v)) {
@@ -183,7 +185,6 @@ export class HashSet<V> implements Iterable<V> {
   }
 
   reduce(callbackFn: (accumulator: V, value: V) => V): V;
-  reduce(callbackFn: (accumulator: V, value: V) => V, initialValue: V): V;
   reduce<U>(callbackFn: (accumulator: U, value: V) => U, initialValue: U): U;
   reduce<U>(callbackFn: (accumulator: NonNullable<U>, value: V) => NonNullable<U>, initialValue?: U): NonNullable<U> {
     let acc = initialValue ?? (this.values().take(1).toArray()[0] as NonNullable<U>);

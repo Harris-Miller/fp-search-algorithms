@@ -66,9 +66,8 @@ export class HashSet<V> implements Iterable<V> {
     this.dict.clear();
   }
 
-  delete(val: V): HashSet<V> {
-    this.dict.delete(val);
-    return this;
+  delete(val: V): boolean {
+    return this.dict.delete(val);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

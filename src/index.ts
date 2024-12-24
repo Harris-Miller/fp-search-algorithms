@@ -3,6 +3,7 @@ export * from './breadthFirst/breadthFirst';
 export * from './depthFirst/depthFirst';
 export * from './dijkstra/dijkstra';
 export * from './yen/yen';
+export { DirectedGraph } from './structures/directedGraph';
 export { HashMap } from './structures/hashMap';
 export { HashSet } from './structures/hashSet';
 export { PriorityQueue } from './structures/priorityQueue';

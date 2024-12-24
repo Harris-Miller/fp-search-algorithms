@@ -9,7 +9,7 @@
 //
 
 import { getHash, hashMerge } from '../internal/hashing';
-import type { IndexNode, Node } from '../internal/hashTree';
+import type { Node } from '../internal/hashTree';
 import { assoc, EMPTY, find, forEach, toArray, without } from '../internal/hashTree';
 import { isEqual } from '../utils/isEqual';
 
@@ -148,7 +148,7 @@ export class HashMap<K, V> implements Iterable<[K, V]> {
 
   set(key: K, val: V): HashMap<K, V> {
     const addedLeaf = { val: false };
-    const root = this.root ?? (EMPTY as IndexNode<K, V>);
+    const root = this.root ?? EMPTY;
     const newRoot = assoc(root, 0, getHash(key), key, val, addedLeaf);
     if (newRoot === this.root) {
       return this;

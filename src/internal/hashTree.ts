@@ -39,7 +39,8 @@ type CollisionNode<K, V> = { array: Entry<K, V>[]; hash: number; type: typeof CO
 type Flag = { val: boolean };
 
 /** @internal */
-export const EMPTY: IndexNode<unknown, unknown> = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const EMPTY: IndexNode<any, any> = {
   array: [],
   bitmap: 0,
   type: INDEX_NODE,
@@ -145,14 +146,7 @@ function createNode<K, V>(shift: number, key1: K, val1: V, key2hash: number, key
     };
   }
   const addedLeaf = { val: false };
-  return assoc(
-    assocIndex(EMPTY as IndexNode<K, V>, shift, key1hash, key1, val1, addedLeaf),
-    shift,
-    key2hash,
-    key2,
-    val2,
-    addedLeaf,
-  );
+  return assoc(assocIndex(EMPTY, shift, key1hash, key1, val1, addedLeaf), shift, key2hash, key2, val2, addedLeaf);
 }
 
 /**
@@ -297,7 +291,7 @@ function assocIndex<K, V>(
     const nodes = new Array<Entry<K, V> | Node<K, V>>(32);
     // create and insert a node for the new entry
     const jdx = mask(hash, shift);
-    nodes[jdx] = assocIndex(EMPTY as IndexNode<K, V>, shift + SHIFT, hash, key, val, addedLeaf);
+    nodes[jdx] = assocIndex(EMPTY, shift + SHIFT, hash, key, val, addedLeaf);
     let j = 0;
     let { bitmap } = root;
     // place each item in the index node into the correct spot in the array node

@@ -28,6 +28,6 @@ describe('dijkstra', () => {
 
     const result = dijkstra(next, always(1), found, start)!;
 
-    expect(result[0]).toBe(246);
+    expect(result.cost).toBe(246);
   });
 });

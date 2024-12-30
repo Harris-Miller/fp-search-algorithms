@@ -1,30 +1,39 @@
+/* eslint-disable complexity */
 import { isEqual } from '../helpers/isEqual';
 import { HashSet } from '../structures/hashSet';
 
 import { dijkstraAssoc } from './dijkstra';
 
 /**
+ * Performs `k` best-first searches using Yen's algorithm
+ * Returns an array of `{ cost: number; path: T[] }`
+ * If array has less then k items, there were less than that many total paths to the solution
+ * If an empty array is returned, there are zero paths to the solution
  *
  * @public
  * @category Yen
+ * @param getNextStates - a function to generate list of neighboring states with associated transition costs given the current state
+ * @param determineIfFound - a function to determine if solution found
+ * @param initial - initial state
+ * @param k - number of shortest paths to find, returned in order of shortest
  */
 export const yenAssoc = <T>(
   getNextStates: (state: T) => [T, number][],
   determineIfFound: (state: T) => boolean,
   initial: T,
   k: number,
-): [totalCost: number, pathTo: T[]][] => {
+): { cost: number; path: T[] }[] => {
   const shortestPath = dijkstraAssoc(getNextStates, determineIfFound, initial);
   if (shortestPath === undefined) return [];
 
   // Determine the shortest path from the source to the sink.
-  const routes: [totalCost: number, pathTo: T[]][] = [[shortestPath[0], shortestPath[1]]];
+  const routes: { cost: number; path: T[] }[] = [shortestPath];
   // Initialize the set to store the potential kth shortest path.
-  const candidates: [totalCost: number, pathTo: T[]][] = [];
+  const candidates: { cost: number; path: T[] }[] = [];
 
   for (let ki = 1; ki < k; ki += 1) {
     // The spur node ranges from the first node to the next to last node in the previous k-shortest path.
-    const [, path] = routes[ki - 1];
+    const { path } = routes[ki - 1];
 
     // Iterate over every node except the sink node.
     for (let i = 0; i <= path.length - 2; i += 1) {
@@ -34,13 +43,18 @@ export const yenAssoc = <T>(
       const rootPath = path.slice(0, i);
 
       const edgesToFilter = new HashSet<[T, T]>();
-      for (const [, p] of routes) {
+      for (const { path: p } of routes) {
         if (isEqual(rootPath, p.slice(0, i))) {
           edgesToFilter.add([p[i], p[i + 1]]);
         }
       }
 
-      const verticesToFilter = new HashSet<T>(rootPath.filter(node => !isEqual(node, spurNode)));
+      const verticesToFilter = new HashSet<T>();
+      for (const node of rootPath) {
+        if (!isEqual(node, spurNode)) {
+          verticesToFilter.add(node);
+        }
+      }
 
       // Calculate the spur path from the spur node to the sink.
       // Consider also checking if any spurPath found
@@ -50,7 +64,7 @@ export const yenAssoc = <T>(
       const dResult = dijkstraAssoc(spurNext, determineIfFound, spurNode);
       if (dResult === undefined) continue;
 
-      const [, dPath] = dResult;
+      const { path: dPath } = dResult;
 
       // Entire path is made up of the root path and spur path.
       const totalPath = [...rootPath, ...dPath];
@@ -62,8 +76,8 @@ export const yenAssoc = <T>(
       }
 
       // Add the potential k-shortest path to the heap
-      if (!candidates.find(([, bp]) => isEqual(bp, totalPath))) {
-        candidates.push([totalCost, totalPath]);
+      if (!candidates.find(({ path: bp }) => isEqual(bp, totalPath))) {
+        candidates.push({ cost: totalCost, path: totalPath });
       }
     }
 
@@ -71,7 +85,7 @@ export const yenAssoc = <T>(
       break;
     }
 
-    candidates.sort(([costL], [costR]) => costL - costR);
+    candidates.sort((l, r) => l.cost - r.cost);
     const bb = candidates.shift()!;
     routes.push(bb);
   }
@@ -80,9 +94,18 @@ export const yenAssoc = <T>(
 };
 
 /**
+ * Performs `k` best-first searches using Yen's algorithm
+ * Returns an array of `{ cost: number; path: T[] }`
+ * If array has less then k items, there were less than that many total paths to the solution
+ * If an empty array is returned, there are zero paths to the solution
  *
  * @public
  * @category Yen
+ * @param getNextStates - a function to generate list of neighboring states given the current state
+ * @param getCost - a function to generate transition costs between neighboring states
+ * @param determineIfFound - a function to determine if solution found
+ * @param initial - initial state
+ * @param k - number of shortest paths to find, returned in order of shortest
  */
 export const yen = <T>(
   getNextStates: (state: T) => T[],
@@ -90,7 +113,7 @@ export const yen = <T>(
   determineIfFound: (state: T) => boolean,
   initial: T,
   k: number,
-): [totalCost: number, pathTo: T[]][] => {
+): { cost: number; path: T[] }[] => {
   const nextAssoc = (state: T) => getNextStates(state).map(n => [n, getCost(state, n)] as [T, number]);
   return yenAssoc(nextAssoc, determineIfFound, initial, k);
 };

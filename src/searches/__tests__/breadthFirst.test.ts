@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 import { isEqual } from '../../helpers/isEqual';
 import { HashSet } from '../../structures/hashSet';
-import { breadthFirstSearch, breadthFirstTraversal } from '../breadthFirst';
+import { breadthFirstSearch, generateBreadthFirstSearch } from '../breadthFirst';
 
 import type { Point } from './utils';
 import { getNeighbors4, makeGrid } from './utils';
@@ -12,9 +12,9 @@ describe('breadth first', () => {
     const next = (value: string): string[] => ['1', '2'].map(v => `${value}${v}`);
 
     const results: string[] = [];
-    for (const [value] of breadthFirstTraversal(next, '1')) {
-      results.push(value);
-      if (value === '122') break;
+    for (const { state } of generateBreadthFirstSearch(next, '1')) {
+      results.push(state);
+      if (state === '122') break;
     }
 
     expect(results).toEqual(['1', '11', '12', '111', '112', '121', '122']);
@@ -26,7 +26,7 @@ describe('breadth first', () => {
 
     const searchResults = breadthFirstSearch(next, found, '1');
 
-    expect(searchResults?.[1]).toEqual(['1', '12', '122']);
+    expect(searchResults?.path).toEqual(['1', '12', '122']);
   });
 
   test('cheese search', async () => {
@@ -49,6 +49,6 @@ describe('breadth first', () => {
 
     const result = breadthFirstSearch(next, found, start);
 
-    expect(result?.[1].length).toBe(247);
+    expect(result?.path.length).toBe(247);
   });
 });

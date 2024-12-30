@@ -4,24 +4,35 @@ import { PriorityQueue } from '../structures/priorityQueue';
 import { createPath } from './internal/createPath';
 
 /**
+ * Generator function that lazily iterates through each visit of an A* search.
+ * If you want just the found path and totalCost to the solution, use `aStarAssoc`
+ *
+ * Each yield is an object `{ cost: number; path: T[] }`
+ *
+ * Notes:
+ * * The first yield will be the initialState with a cost of 0
+ * * Specific states may be visited multiple time, but through different costs and paths
+ * * If the solved state is found, that will be the final yield, otherwise the final yield will happen once all possible states are visited
+ * * Generator `return` value (at `done: true`) will be the found solution or undefined
  *
  * @public
  * @category AStar
- * @param getNextStates
- * @param estimateRemainingCost
- * @param initial
- * @returns
+ * @param getNextStates - a function to generate list of neighboring states with associated transition costs given the current state
+ * @param estimateRemainingCost - a heuristic function to determine remaining cost
+ * @param determineIfFound - a function to determine if solution found
+ * @param initial - initial state
  */
-export const aStarAssocTraversal = function* <T>(
-  getNextStates: (n: T) => [T, number][],
-  estimateRemainingCost: (n: T) => number,
+export const generateAStarAssoc = function* <T>(
+  getNextStates: (state: T) => [state: T, cost: number][],
+  estimateRemainingCost: (state: T) => number,
+  determineIfFound: (state: T) => boolean,
   initial: T,
-): Generator<[number, T[]]> {
+): Generator<{ cost: number; path: T[] }, { cost: number; path: T[] } | undefined> {
   const cameFrom = new HashMap<T, T>();
   const gScore = new HashMap<T, number>().set(initial, 0);
   const fScore = new HashMap<T, number>().set(initial, estimateRemainingCost(initial));
 
-  const queue = new PriorityQueue((a: T, b: T) => {
+  const queue = new PriorityQueue<T>((a, b) => {
     const aScore = fScore.get(a)!;
     const bScore = fScore.get(b)!;
     return aScore < bScore;
@@ -29,16 +40,22 @@ export const aStarAssocTraversal = function* <T>(
   queue.push(initial);
 
   while (!queue.isEmpty()) {
-    const current = queue.pop()!;
+    const state = queue.pop()!;
 
-    yield [gScore.get(current)!, createPath(cameFrom, current)];
+    const cost = gScore.get(state)!;
+    const toYield: { cost: number; path: T[] } = {
+      cost,
+      path: createPath(cameFrom, state),
+    };
+    yield toYield;
+    if (determineIfFound(state)) return toYield;
 
-    const nextStates = getNextStates(current);
-    for (const [nextState, cost] of nextStates) {
-      const tentativeGScore = gScore.get(current)! + cost;
+    const nextStates = getNextStates(state);
+    for (const [nextState, nextCost] of nextStates) {
+      const tentativeGScore = cost + nextCost;
 
       if (tentativeGScore < (gScore.get(nextState) ?? Infinity)) {
-        cameFrom.set(nextState, current);
+        cameFrom.set(nextState, state);
         gScore.set(nextState, tentativeGScore);
         fScore.set(nextState, tentativeGScore + estimateRemainingCost(nextState));
         queue.push(nextState);
@@ -50,86 +67,84 @@ export const aStarAssocTraversal = function* <T>(
 };
 
 /**
+ * Generator function that lazily iterates through each visit of an A* search.
+ * If you want just the found path and totalCost to the solution, use `aStar`
+ *
+ * Each yield is an object `{ cast: number; path: T[] }`
+ *
+ * Notes:
+ * * The first yield will be the initialState with a cost of 0
+ * * Specific states may be visited multiple time, but through different costs and paths
+ * * If the solved state is found, that will be the final yield, otherwise the final yield will happen once all possible states are visited
+ * * The return value is the total cost and path, or undefined if path to solved state is not possible
  *
  * @public
  * @category AStar
- * @param getNextStates
- * @param getCost
- * @param estimateRemainingCost
- * @param initial
+ * @param getNextStates - a function to generate list of neighboring states given the current state
+ * @param getCost - a function to generate transition costs between neighboring states
+ * @param estimateRemainingCost - a heuristic function to determine remaining cost
+ * @param determineIfFound - a function to determine if solution found
+ * @param initial - initial state
  */
-export const aStarTraversal = function* <T>(
-  getNextStates: (n: T) => T[],
-  getCost: (a: T, b: T) => number,
-  estimateRemainingCost: (n: T) => number,
+export const generateAStar = function* <T>(
+  getNextStates: (state: T) => T[],
+  getCost: (from: T, to: T) => number,
+  estimateRemainingCost: (state: T) => number,
+  determineIfFound: (state: T) => boolean,
   initial: T,
-): Generator<[number, T[]]> {
-  const nextAssoc = (state: T) => getNextStates(state).map(n => [n, getCost(state, n)] as [T, number]);
-  yield* aStarAssocTraversal(nextAssoc, estimateRemainingCost, initial);
+): Generator<{ cost: number; path: T[] }, { cost: number; path: T[] } | undefined> {
+  const nextAssoc = (state: T) => getNextStates(state).map<[T, number]>(n => [n, getCost(state, n)]);
+  return yield* generateAStarAssoc(nextAssoc, estimateRemainingCost, determineIfFound, initial);
 };
 
 /**
- * Performs a best-first search
- * using the A* search algorithm, starting with the state @initial@, generating
- * neighboring states and their associated costs with @next@, and an estimate of
- * the remaining cost with @remaining@. This returns a path to a state for which
- * @found@ returns 'True'. If @remaining@ is strictly a lower bound on the
- * remaining cost to reach a solved state, then the returned path is the
- * shortest path. Returns 'Nothing' if no path to a solved state is possible.
+ * Performs a best-first search using the A* search algorithm
  *
  * @public
  * @category AStar
- * @param getNextStates - Function to generate list of neighboring states with associated transition costs given the current state
- * @param estimateRemainingCost - Estimate on remaining cost given a state
- * @param determineIfFound - Predicate to determine if solution found. `aStar` returns the shortest path to the first state for which this predicate returns `true`
- * @param start - starting state
- * @returns [Total cost, list of steps] for the first path found which satisfies the given predicate
+ * @param getNextStates - a function to generate list of neighboring states with associated transition costs given the current state
+ * @param estimateRemainingCost - a heuristic function to determine remaining cost
+ * @param determineIfFound - a function to determine if solution found
+ * @param initial - initial state
+ * @returns an object with `totalCost` and the `path` with costs between states, or `undefined` if no path found
  */
 export const aStarAssoc = <T>(
-  getNextStates: (n: T) => [T, number][],
-  estimateRemainingCost: (n: T) => number,
-  determineIfFound: (a: T) => boolean,
-  start: T,
-): [number, T[], T[]] | undefined => {
-  const visited: T[] = [];
-  for (const [value, pathTo] of aStarAssocTraversal(getNextStates, estimateRemainingCost, start)) {
-    const current = pathTo[pathTo.length - 1];
-    visited.push(current);
-    if (determineIfFound(current)) return [value, pathTo, visited];
+  getNextStates: (state: T) => [state: T, cost: number][],
+  estimateRemainingCost: (state: T) => number,
+  determineIfFound: (state: T) => boolean,
+  initial: T,
+): { cost: number; path: T[] } | undefined => {
+  const iterable = generateAStarAssoc(getNextStates, estimateRemainingCost, determineIfFound, initial);
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const { done, value } = iterable.next();
+    if (done === true) return value;
   }
-  return undefined;
 };
 
 /**
- * Performs a best-first search
- * using the A* search algorithm, starting with the state @initial@, generating
- * neighboring states with `next`, their cost with @cost@, and an estimate of
- * the remaining cost with `remaining`. This returns a path to a state for which
- * `found` returns `true`. If `remaining` is strictly a lower bound on the
- * remaining cost to reach a solved state, then the returned path is the
- * shortest path. Returns `undefined` if no path to a solved state is possible.
+ * Performs a best-first search using the A* search algorithm
  *
  * @public
  * @category AStar
- * @param getNextStates - Function to generate list of neighboring states given the current state
- * @param getCost - Function to generate transition costs between neighboring states
- * @param estimateRemainingCost - Estimate on remaining cost given a state
- * @param determineIfFound - Predicate to determine if solution found. `aStar` returns the shortest path to the first state for which this predicate returns `true`
- * @param initial - Initial state
- * @returns - [Total cost, list of steps] for the first path found which satisfies the given predicate
+ * @param getNextStates - a function to generate list of neighboring states given the current state
+ * @param getCost - a function to generate transition costs between neighboring states
+ * @param estimateRemainingCost - a heuristic function to determine remaining cost
+ * @param determineIfFound - a function to determine if solution found
+ * @param initial - initial state
+ * @returns an object with `totalCost` and the `path` with costs between states, or `undefined` if no path found
  */
 export const aStar = <T>(
-  getNextStates: (n: T) => T[],
-  getCost: (a: T, b: T) => number,
-  estimateRemainingCost: (n: T) => number,
-  determineIfFound: (a: T) => boolean,
+  getNextStates: (state: T) => T[],
+  getCost: (from: T, to: T) => number,
+  estimateRemainingCost: (state: T) => number,
+  determineIfFound: (state: T) => boolean,
   initial: T,
-): [number, T[], T[]] | undefined => {
-  const visited: T[] = [];
-  for (const [value, pathTo] of aStarTraversal(getNextStates, getCost, estimateRemainingCost, initial)) {
-    const current = pathTo[pathTo.length - 1];
-    visited.push(current);
-    if (determineIfFound(current)) return [value, pathTo, visited];
+): { cost: number; path: T[] } | undefined => {
+  const iterable = generateAStar(getNextStates, getCost, estimateRemainingCost, determineIfFound, initial);
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const { done, value } = iterable.next();
+    if (done === true) return value;
   }
-  return undefined;
 };

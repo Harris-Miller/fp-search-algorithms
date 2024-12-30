@@ -32,9 +32,9 @@ describe('yen', () => {
   it('works', () => {
     const result = yenAssoc(next, found, 'c', 3);
     expect(result).toEqual([
-      [5, ['c', 'e', 'f', 'h']],
-      [5, ['c', 'e', 'g', 'h']],
-      [6, ['c', 'e', 'f', 'g', 'h']],
+      { cost: 5, path: ['c', 'e', 'f', 'h'] },
+      { cost: 5, path: ['c', 'e', 'g', 'h'] },
+      { cost: 6, path: ['c', 'e', 'f', 'g', 'h'] },
     ]);
   });
 });

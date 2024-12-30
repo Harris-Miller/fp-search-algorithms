@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { depthFirstSearch, depthFirstTraversal } from '../depthFirst';
+import { depthFirstSearch, generateDepthFirstSearch } from '../depthFirst';
 
 type Tree<T> = { children: Tree<T>[]; value: T };
 
@@ -28,8 +28,8 @@ describe('depth first search', () => {
   test('generator function', () => {
     const next = ({ children }: Tree<string>) => children;
 
-    const genResults = depthFirstTraversal(next, tree)
-      .map(x => x[0].value)
+    const genResults = generateDepthFirstSearch(next, tree)
+      .map(x => x.state.value)
       .toArray();
 
     expect(genResults).toEqual(['1', '11', '111', '112', '12', '121', '122']);
@@ -39,7 +39,7 @@ describe('depth first search', () => {
     const next = ({ children }: Tree<string>) => children;
     const found = ({ value }: Tree<string>) => value === '122';
 
-    const searchResults = depthFirstSearch(next, found, tree)?.[1].map(x => x.value);
+    const searchResults = depthFirstSearch(next, found, tree)?.path.map(x => x.value);
 
     expect(searchResults).toEqual(['1', '12', '122']);
   });

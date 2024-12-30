@@ -2,98 +2,86 @@ import { HashSet } from '../structures/hashSet';
 
 /**
  * Dynamically generates and walks a tree in breadth-first order
- * This tree produces all possible pathways, and will revisit nodes
- * If a node is reach more than once, pathSoFar will be unique between them
+ * This tree produces all possible pathways, and will revisit nodes, but not among its own unique pathway
  *
  * @public
  * @category BreadthFirst
+ * @param getNextStates - a function to generate list of neighboring states given the current state
+ * @param forest - top level "forest" of states to begin traversal from
  */
-export const generateTreeBreadthFirst = function* <T>(
-  next: (a: T) => T[],
-  start: T,
-): Generator<[visit: T, pathFromStart: T[]]> {
+export const generateBreadthFirstTreeTraversal = function* <T>(
+  getNextStates: (state: T) => T[],
+  forest: T[],
+): Generator<{ path: T[]; state: T }> {
   // we queue a pair of values and the path through to get there
-  const queue: [T, T[]][] = [[start, []]];
+  const queue: [T, T[]][] = forest.map<[T, T[]]>(f => [f, []]);
 
   while (queue.length) {
-    const [value, pathSoFar] = queue.shift()!;
+    const [state, pathSoFar] = queue.shift()!;
+    const path = [...pathSoFar, state];
+    yield { path, state };
 
-    yield [value, [...pathSoFar, value]];
-
-    const nextPathSoFar = [...pathSoFar, value];
-    queue.push(...next(value).map(v => [v, nextPathSoFar] as [T, T[]]));
+    queue.push(...getNextStates(state).map<[T, T[]]>(s => [s, path]));
   }
 };
 
 /**
- * Performs a breadth-first traversal over a set of states.
- * Starting with `initial`, and generating neighboring states with `next`.
- * This generator yields each state as it is visited.
- * Caution: If your states grow infinitely, so will this generator
+ * Generator function that lazily iterates through each visit of a breadth-first search.
+ * If you want just the found path to the solution, use `breadthFirstSearch`
+ *
+ * Each yield is an object `{ path: T[]; state: T }`
+ * * `state` is the current state being visited
+ * * `path` is, including current state, the in order steps it took to get to that state
+ * * states are never re-visited
  *
  * @public
  * @category BreadthFirst
+ * @param getNextStates - a function to generate list of neighboring states given the current state
+ * @param initial - initial state
  */
 export const generateBreadthFirstSearch = function* <T>(
-  next: (a: T) => T[],
-  start: T,
-): Generator<[visit: T, pathFromStart: T[]]> {
+  getNextStates: (state: T) => T[],
+  initial: T,
+): Generator<{ path: T[]; state: T }> {
   const visited = new HashSet<T>();
   // we queue a pair of values and the path through to get there
-  const queue: [T, T[]][] = [[start, []]];
+  const queue: [T, T[]][] = [[initial, []]];
 
   while (queue.length) {
-    const [value, pathSoFar] = queue.shift()!;
+    const [state, pathSoFar] = queue.shift()!;
 
-    if (visited.has(value)) continue;
+    if (visited.has(state)) continue;
 
-    yield [value, [...pathSoFar, value]];
+    const path = [...pathSoFar, state];
+    yield { path, state };
 
-    visited.add(value);
+    visited.add(state);
 
-    const nextPathSoFar = [...pathSoFar, value];
     queue.push(
-      ...next(value)
+      ...getNextStates(state)
         .filter(v => !visited.has(v))
-        .map(v => [v, nextPathSoFar] as [T, T[]]),
+        .map<[T, T[]]>(v => [v, path]),
     );
   }
 };
 
 /**
- * Performs a breadth-first traversal over a set of states.
- * Starting with `initial`, and generating neighboring states with `next`.
- * This generator yields each state as it is visited.
- * Caution: If your states grow infinitely, so will this generator
+ * Performs a breadth-first-search (bfs) over a set of states starting from an `initial`
+ * Returns a `{ path: T[]; state: T }` when solution found, `undefined` otherwise
  *
  * @public
  * @category BreadthFirst
- * @deprecated renamed `generateBreadthFirstSearch
- */
-export const breadthFirstTraversal = generateBreadthFirstSearch;
-
-/**
- * Performs a breadth-first-search (bfs) over a set of states.
- * Starting with `initial`, and generating neighboring states with `next`
- * Returns a path to a state when `found` returns `true`
- * Returns `undefined` if no path is possible.
- *
- * @public
- * @category BreadthFirst
- * @param next - Function to generate "next" states given a current state
- * @param found - Predicate to determine if solution found. `bfs` returns a path to the first state for which this predicate returns `true`.
- * @param start - Initial state
- * @returns First path found to a state matching the predicate, `undefined` if no such path exists.
+ * @param getNextStates - a function to generate list of neighboring states given the current state
+ * @param determineIfFound - a function to determine if solution found
+ * @param initial - initial state
  */
 export const breadthFirstSearch = <T>(
-  next: (state: T) => T[],
-  found: (state: T) => boolean,
-  start: T,
-): [foundState: T, pathTo: T[], visited: T[]] | undefined => {
-  const visited: T[] = [];
-  for (const [value, pathTo] of generateBreadthFirstSearch(next, start)) {
-    visited.push(value);
-    if (found(value)) return [value, pathTo, visited];
+  getNextStates: (state: T) => T[],
+  determineIfFound: (state: T) => boolean,
+  initial: T,
+): { path: T[]; state: T } | undefined => {
+  for (const visit of generateBreadthFirstSearch(getNextStates, initial)) {
+    if (determineIfFound(visit.state)) return visit;
   }
   return undefined;
 };

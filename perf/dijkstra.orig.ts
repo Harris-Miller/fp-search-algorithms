@@ -1,4 +1,8 @@
-import { generateAStar, generateAStarAssoc } from './aStar';
+import { createPath } from '../src/searches/internal/createPath';
+import { HashMap } from '../src/structures/hashMap';
+import { PriorityQueue } from '../src/structures/priorityQueue';
+
+// This file is the previous stand-alone implementation of Dijkstra before I made it use AStar with a heuristic `() => 0`
 
 /**
  * Generator function that lazily iterates through each visit of an Dijkstra search.
@@ -23,7 +27,39 @@ export const generateDijkstraAssoc = function* <T>(
   determineIfFound: (state: T) => boolean,
   initial: T,
 ): Generator<{ cost: number; path: T[] }, { cost: number; path: T[] } | undefined> {
-  return yield* generateAStarAssoc(getNextStates, () => 0, determineIfFound, initial);
+  const cameFrom = new HashMap<T, T>();
+  const costMap = new HashMap<T, number>().set(initial, 0);
+
+  const queue = new PriorityQueue<T>((a, b) => {
+    const aScore = costMap.get(a)!;
+    const bScore = costMap.get(b)!;
+    return aScore < bScore;
+  });
+  queue.push(initial);
+
+  while (!queue.isEmpty()) {
+    const state = queue.pop()!;
+
+    const toYield: { cost: number; path: T[] } = {
+      cost: costMap.get(state)!,
+      path: createPath(cameFrom, state),
+    };
+    yield toYield;
+    if (determineIfFound(state)) return toYield;
+
+    const visitCost = costMap.get(state) ?? Infinity;
+    const nextStates = getNextStates(state);
+    for (const [nextState, nextCost] of nextStates) {
+      const altCost = visitCost + nextCost;
+      if (altCost < (costMap.get(nextState) ?? Infinity)) {
+        costMap.set(nextState, altCost);
+        cameFrom.set(nextState, state);
+        queue.push(nextState);
+      }
+    }
+  }
+
+  return undefined;
 };
 
 /**
@@ -51,7 +87,8 @@ export const generateDijkstra = function* <T>(
   determineIfFound: (state: T) => boolean,
   initial: T,
 ): Generator<{ cost: number; path: T[] }, { cost: number; path: T[] } | undefined> {
-  return yield* generateAStar(getNextStates, getCost, () => 0, determineIfFound, initial);
+  const nextAssoc = (state: T) => getNextStates(state).map(n => [n, getCost(state, n)] as [T, number]);
+  return yield* generateDijkstraAssoc(nextAssoc, determineIfFound, initial);
 };
 
 /**

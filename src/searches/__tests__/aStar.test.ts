@@ -46,8 +46,6 @@ describe('aStar', () => {
       state => isEqual(state, end),
       start,
     )!;
-
-    const [steps] = r;
-    expect(steps).toBe(412);
+    expect(r.cost).toBe(412);
   });
 });

@@ -10,7 +10,7 @@
 // Ported to typescript
 //
 
-import { isEqual } from '../utils/isEqual';
+import { isEqual } from '../../helpers/isEqual';
 
 import { getHash } from './hashing';
 

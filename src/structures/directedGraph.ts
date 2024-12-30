@@ -1,8 +1,14 @@
 /* eslint-disable @typescript-eslint/prefer-return-this-type */
-import { isEqual } from '../utils/isEqual';
+import { isEqual } from '../helpers/isEqual';
 
 import { HashSet } from './hashSet';
 
+/**
+ * Tuple representing an Edge between to Vertices
+ *
+ * @public
+ * @category Structures
+ */
 export type Edge<V> = [from: V, to: V];
 
 /**
@@ -29,15 +35,17 @@ export class DirectedGraph<V, L = unknown> {
     this.cyclical = options.cyclical ?? false;
   }
 
-  //
-  // Vertices
-  //
-
+  /**
+   * @group Vertices
+   */
   addVertex(vertex: V): DirectedGraph<V, L> {
     this.vertices.add(vertex);
     return this;
   }
 
+  /**
+   * @group Vertices
+   */
   deleteVertex(vertex: V): boolean {
     const deleted = this.vertices.delete(vertex);
     if (deleted) {
@@ -46,6 +54,9 @@ export class DirectedGraph<V, L = unknown> {
     return deleted;
   }
 
+  /**
+   * @group Vertices
+   */
   deleteVertices(vertices: V[]): boolean[] {
     const deleted = vertices.map(v => this.vertices.delete(v));
     const hs = new HashSet<V>(vertices);
@@ -65,50 +76,77 @@ export class DirectedGraph<V, L = unknown> {
     return this.edges.values().filter(([from, to]) => isEqual(from, vertex) || isEqual(to, vertex));
   }
 
-  /** return all edges fora given vertex in an unspecified order */
+  /**
+   * Return all edges fora given vertex in an unspecified order
+   *
+   * @group Vertices
+   * */
   getEdges(vertex: V): Edge<V>[] {
     return Array.from(this.edgesIterator(vertex));
   }
 
+  /**
+   * @group Vertices
+   */
   inDegree(vertex: V): number {
     return Array.from(this.inEdgesIterator(vertex)).length;
   }
 
+  /**
+   * @group Vertices
+   */
   outDegree(vertex: V): number {
     return Array.from(this.outEdgesIterator(vertex)).length;
   }
 
-  inEdges(vertex: V): Edge<V>[] {
-    return Array.from(this.inEdgesIterator(vertex));
-  }
-
-  outEdges(vertex: V): Edge<V>[] {
-    return Array.from(this.outEdgesIterator(vertex));
-  }
-
+  /**
+   * @group Vertices
+   */
   inNeighbors(vertex: V): V[] {
     return Array.from(this.inEdgesIterator(vertex).map(([from]) => from));
   }
 
+  /**
+   * @group Vertices
+   */
   outNeighbors(vertex: V): V[] {
     return Array.from(this.outEdgesIterator(vertex).map(([, to]) => to));
   }
 
-  //
-  // Edges
-  //
-
+  /**
+   * @group Edges
+   */
   addEdge(from: V, to: V) {
     this.edges.add([from, to]);
     return this;
   }
 
+  /**
+   * @group Edges
+   */
   deleteEdge(edge: Edge<V>): boolean {
     return this.edges.delete(edge);
   }
 
+  /**
+   * @group Edges
+   */
   deleteEdges(edges: Edge<V>[]): boolean[] {
     return edges.map(tuple => this.edges.delete(tuple));
+  }
+
+  /**
+   * @group Edges
+   */
+  inEdges(vertex: V): Edge<V>[] {
+    return Array.from(this.inEdgesIterator(vertex));
+  }
+
+  /**
+   * @group Edges
+   */
+  outEdges(vertex: V): Edge<V>[] {
+    return Array.from(this.outEdgesIterator(vertex));
   }
 
   //
@@ -120,41 +158,56 @@ export class DirectedGraph<V, L = unknown> {
   //   return Array.from(this.edgesIterator(vertex));
   // }
 
-  /** Returns number of vertices */
+  /**
+   * Returns number of vertices
+   *
+   * @group Helpers
+   */
   numVertices(): number {
     return this.vertices.size;
   }
 
-  /** Returns number of edges */
+  /**
+   * Returns number of edges
+   *
+   * @group Helpers
+   */
   numEdges(): number {
     return this.edges.size;
   }
 
-  //
-  // Advanced
-  //
-
   /**
    * If a simple cycle of length two or more exists through a vertex, the cycle is returned as a list [V, ..., V] of vertices.
    * If a loop through the vertex exists, the loop is returned as a list [V]. If no cycles exist, undefined is returned.
+   *
+   * @group Advanced
    */
   getCycle(vertex: V): V[] | undefined {
     if (this.outNeighbors(vertex).includes(vertex)) return [vertex];
     return this.onePath(this.outNeighbors(vertex), vertex, [], new HashSet<V>([vertex]), [vertex], 2, 1);
   }
+
   /**
    * Tries to find an as short as possible simple cycle through a vertex.
    * Returns the cycle as a list [V, ..., V] of vertices, or undefined if no simple cycle exists.
    * Notice that a loop through the vertex is returned as list [V, V].
+   *
+   * @group Advanced
    */
   getShortCycle(vertex: V): V[] | undefined {
     return this.getShortPath(vertex, vertex);
   }
 
+  /**
+   * @group Advanced
+   */
   getPath(from: V, to: V): V[] | undefined {
     return this.onePath(this.outNeighbors(from), to, [], new HashSet<V>([from]), [from], 1, 1);
   }
 
+  /**
+   * @group Advanced
+   */
   getShortPath(from: V, to: V): V[] | undefined {
     const tempGraph = new DirectedGraph<V>().addVertex(from);
     const queue = this.outEdges(from);
@@ -164,6 +217,8 @@ export class DirectedGraph<V, L = unknown> {
   /**
    * Delete all paths found between two vertices.
    * Returns false if not paths found, otherwise returns true
+   *
+   * @group Advanced
    */
   deletePath(from: V, to: V): boolean {
     let path = this.getPath(from, to);
@@ -179,12 +234,17 @@ export class DirectedGraph<V, L = unknown> {
     return true;
   }
 
+  /**
+   * @group Advanced
+   */
   components(): V[][] {
     throw new Error('DirectedGraph#components :: Not yet implemented');
   }
 
   /**
    * Returns true if and only if the DirectedGraph is acyclic.
+   *
+   * @group Advanced
    */
   isAcyclic(): boolean {
     throw new Error('DirectedGraph#isAcyclic :: Not yet implemented');
@@ -192,35 +252,43 @@ export class DirectedGraph<V, L = unknown> {
 
   /**
    * Returns true if and only if the DirectedGraph is a tree.
+   *
+   * @group Advanced
    */
   isTree(): boolean {
     throw new Error('DirectedGraph#isTree :: Not yet implemented');
   }
 
+  /**
+   * @group Advanced
+   */
   reachable(vertices: V[]): V[] {
     return this.postGenerate(vertices, false).toArray();
   }
 
+  /**
+   * @group Advanced
+   */
   reachableNeighbors(vertices: V[]): V[] {
     return this.postGenerate(vertices, true).toArray();
   }
 
   /**
-   *
+   * @group Advanced
    */
   postOrder(): V[] {
     return this.postGenerate([...this.vertices], false).toArray();
   }
 
   /**
-   *
+   * @group Advanced
    */
   preOrder(): V[] {
     throw new Error('DirectedGraph#preOrder :: Not yet implemented');
   }
 
   /**
-   *
+   * @group Advanced
    */
   topsort(): V[] {
     throw new Error('DirectedGraph#topsort :: Not yet implemented');

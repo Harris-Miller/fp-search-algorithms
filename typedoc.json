@@ -5,10 +5,11 @@
   ],
   "out": "docs",
   "excludeInternal": true,
+  "includeVersion": true,
   "navigation": {
     "includeCategories": true,
-    "includeGroups": false,
-    "includeFolders": true,
+    "includeGroups": true,
+    "includeFolders": false,
     "compactFolders": false,
     "excludeReferences": true
   },

@@ -44,8 +44,9 @@ const structurallyCompatibleObjects = (a: object, b: object) => {
 
 /**
  * Deep equality check
+ *
  * @public
- * @category Utils
+ * @category Helpers
  */
 export const isEqual = <T>(x: T, y: T) => {
   const values: unknown[] = [x, y];

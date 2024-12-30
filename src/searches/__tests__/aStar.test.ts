@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'bun:test';
 
-import { getNeighbors4, makeGrid } from '../__tests__/utils';
-import type { Point } from '../__tests__/utils';
-import { isEqual } from '../utils/isEqual';
+import { isEqual } from '../../helpers/isEqual';
+import { aStar } from '../aStar';
 
-import { aStar } from './aStar';
+import { getNeighbors4, makeGrid } from './utils';
+import type { Point } from './utils';
 
 const heightMap: Record<string, number> = {
   ...'abcdefghijklmnopqrstuvwxyz'.split('').reduce<Record<string, number>>((acc, v, i) => ({ ...acc, [v]: i + 1 }), {}),

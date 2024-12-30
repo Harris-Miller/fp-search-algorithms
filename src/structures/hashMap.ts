@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable @typescript-eslint/unified-signatures */
 /* eslint-disable @typescript-eslint/prefer-return-this-type */
 /* eslint-disable no-bitwise */
@@ -8,10 +9,11 @@
 // Ported to typescript
 //
 
-import { getHash, hashMerge } from '../internal/hashing';
-import type { Node } from '../internal/hashTree';
-import { assoc, EMPTY, find, forEach, toArray, without } from '../internal/hashTree';
-import { isEqual } from '../utils/isEqual';
+import { isEqual } from '../helpers/isEqual';
+
+import { getHash, hashMerge } from './internal/hashing';
+import type { Node } from './internal/hashTree';
+import { assoc, EMPTY, find, forEach, toArray, without } from './internal/hashTree';
 
 // This is thrown internally in Dict.equals() so that it returns false as soon
 // as a non-matching key is found
@@ -28,41 +30,34 @@ const unequalDictSymbol = Symbol();
  * @category Structures
  */
 export class HashMap<K, V> implements Iterable<[K, V]> {
+  private root: Node<K, V> | undefined;
+  private _size: number;
+
   /**
-   * A function constructor that handles an EntriesArray, Object, or native Map
+   * A function constructor that handles an a native Map, an object, an entries array, , or an iterable
+   * @group Constructors
    */
   static from<K, V>(): HashMap<K, V>;
-  static from<V>(object: Record<string, V>): HashMap<string, V>;
   static from<K, V>(map: Map<K, V>): HashMap<string, V>;
-
-  static from<K, V>(entries: Iterable<readonly [K, V]>): HashMap<string, V>;
-  static from<K, V>(oneOfThem?: unknown): HashMap<K, V> {
+  static from<V>(object: Record<string, V>): HashMap<string, V>;
+  static from<K, V>(entries: readonly [K, V][]): HashMap<string, V>;
+  static from<K, V>(iterable: Iterable<readonly [K, V]>): HashMap<string, V>;
+  static from<K, V>(oneOfThem?: Iterable<readonly [K, V]> | Map<K, V> | Record<string, V>): HashMap<K, V> {
     if (oneOfThem == null) {
       return new HashMap<K, V>();
     }
 
-    if (oneOfThem instanceof Map) {
-      const dict = new HashMap<K, V>();
-      (oneOfThem as Map<K, V>).forEach((v, k) => {
-        dict.set(k, v);
-      });
-      return dict;
-    }
-
-    if (Array.isArray(oneOfThem)) {
+    if (Symbol.iterator in oneOfThem) {
       return new HashMap<K, V>(oneOfThem);
     }
 
     // else isObject
-    const keys = Object.keys(oneOfThem as Record<string, V>);
-    const dict = new HashMap<string, V>();
-    for (let i = 0; i < keys.length; i++) {
-      const k = keys[i];
-      dict.set(k, (oneOfThem as Record<string, V>)[k]);
-    }
-    return dict as HashMap<K, V>;
+    return new HashMap<K, V>(Object.entries(oneOfThem) as [K, V][]);
   }
 
+  /**
+   * @group Statics
+   */
   static groupBy<K, V>(items: Iterable<V>, keySelector: (item: V, index: number) => K): HashMap<K, V[]> {
     const dict = new HashMap<K, V[]>();
     let i = 0;
@@ -77,14 +72,12 @@ export class HashMap<K, V> implements Iterable<[K, V]> {
     return dict;
   }
 
-  private root: Node<K, V> | undefined;
-  private sizeInternal: number;
-
   constructor();
-  constructor(iterable: Iterable<readonly [K, V]> | null);
+  constructor(iterable?: Iterable<readonly [K, V]> | null);
+  constructor(entries?: readonly (readonly [K, V])[] | null);
   constructor(iterable?: Iterable<readonly [K, V]> | null) {
     this.root = undefined;
-    this.sizeInternal = 0;
+    this._size = 0;
     if (iterable != null) {
       for (const [k, v] of iterable) {
         this.set(k, v);
@@ -98,7 +91,7 @@ export class HashMap<K, V> implements Iterable<[K, V]> {
 
   clear(): void {
     this.root = undefined;
-    this.sizeInternal = 0;
+    this._size = 0;
   }
 
   delete(key: K): boolean {
@@ -111,7 +104,7 @@ export class HashMap<K, V> implements Iterable<[K, V]> {
     }
 
     this.root = newRoot;
-    this.sizeInternal -= 1;
+    this._size -= 1;
 
     return true;
   }
@@ -154,7 +147,7 @@ export class HashMap<K, V> implements Iterable<[K, V]> {
       return this;
     }
     this.root = newRoot;
-    this.sizeInternal = addedLeaf.val ? this.sizeInternal + 1 : this.sizeInternal;
+    this._size = addedLeaf.val ? this._size + 1 : this._size;
     return this;
   }
 
@@ -163,7 +156,7 @@ export class HashMap<K, V> implements Iterable<[K, V]> {
   }
 
   get size(): number {
-    return this.sizeInternal;
+    return this._size;
   }
 
   [Symbol.iterator]() {
@@ -189,7 +182,7 @@ export class HashMap<K, V> implements Iterable<[K, V]> {
   }
 
   equals(other: HashMap<K, V>): boolean {
-    if (!(other instanceof HashMap) || this.sizeInternal !== other.sizeInternal) {
+    if (!(other instanceof HashMap) || this._size !== other._size) {
       return false;
     }
 

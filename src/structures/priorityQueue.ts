@@ -18,30 +18,30 @@ export class PriorityQueue<T> {
 
   constructor(private comparator: (a: T, b: T) => boolean) {}
 
-  public size() {
+  size() {
     return this.heap.length;
   }
 
-  public isEmpty() {
+  isEmpty() {
     return this.size() === 0;
   }
-  public peek() {
+  peek() {
     return this.heap[TOP];
   }
 
-  public replace(value: T) {
+  replace(value: T) {
     const replacedValue = this.peek();
     this.heap[TOP] = value;
     this.siftDown();
     return replacedValue;
   }
 
-  public push(value: T): void {
+  push(value: T): void {
     this.heap.push(value);
     this.siftUp();
   }
 
-  public pop(): T | undefined {
+  pop(): T | undefined {
     const poppedValue = this.peek();
     const bottom = this.size() - 1;
     if (bottom > TOP) {

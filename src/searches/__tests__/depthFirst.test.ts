@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { depthFirstSearch, depthFirstTraversal } from './depthFirst';
+import { depthFirstSearch, depthFirstTraversal } from '../depthFirst';
 
 type Tree<T> = { children: Tree<T>[]; value: T };
 

@@ -1,15 +1,15 @@
 import { describe, expect, test } from 'bun:test';
 
-import { always, getNeighbors4, makeGrid } from '../__tests__/utils';
-import type { Point } from '../__tests__/utils';
-import { HashSet } from '../structures/hashSet';
-import { isEqual } from '../utils/isEqual';
+import { isEqual } from '../../helpers/isEqual';
+import { HashSet } from '../../structures/hashSet';
+import { dijkstra } from '../dijkstra';
 
-import { dijkstra } from './dijkstra';
+import type { Point } from './utils';
+import { always, getNeighbors4, makeGrid } from './utils';
 
 describe('dijkstra', () => {
   test('cheese search', async () => {
-    const url = new URL('../breadthFirst/cheeseSearch.txt', import.meta.url);
+    const url = new URL('./cheeseSearch.txt', import.meta.url);
     const contents = await Bun.file(url).text();
     const grid = makeGrid(contents);
     const walls = new HashSet(

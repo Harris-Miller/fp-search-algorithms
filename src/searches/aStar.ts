@@ -1,6 +1,7 @@
-import { createPath } from '../internal/createPath';
 import { HashMap } from '../structures/hashMap';
 import { PriorityQueue } from '../structures/priorityQueue';
+
+import { createPath } from './internal/createPath';
 
 /**
  *

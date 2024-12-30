@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 
-import { HashMap } from '../structures/hashMap';
-
-import { yenAssoc } from './yen';
+import { HashMap } from '../../structures/hashMap';
+import { yenAssoc } from '../yen';
 
 const costs = new HashMap<[string, string], number>([
   [['c', 'd'], 3],

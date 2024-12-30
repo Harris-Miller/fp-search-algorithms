@@ -1,4 +1,4 @@
-import { HashMap } from '../structures/hashMap';
+import { HashMap } from '../../structures/hashMap';
 
 export type Point = [number, number];
 

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/unified-signatures */
 /* eslint-disable @typescript-eslint/prefer-return-this-type */
-/* eslint-disable no-plusplus */
+
 import { HashMap } from './hashMap';
 
 /**
@@ -13,37 +13,23 @@ import { HashMap } from './hashMap';
  * @category Structures
  */
 export class HashSet<V> implements Iterable<V> {
-  static from<V>(): HashSet<V>;
-  static from<V>(array: readonly V[]): HashSet<V>;
-
-  static from<V>(set: Set<V>): HashSet<V>;
-  static from<V>(oneOfThem?: unknown): HashSet<V> {
-    if (oneOfThem == null) {
-      return new HashSet<V>();
-    }
-
-    if (oneOfThem instanceof Set) {
-      const ds = new HashSet<V>();
-      (oneOfThem as Set<V>).forEach(v => {
-        ds.add(v);
-      });
-      return ds;
-    }
-
-    // else must be array
-    const ds = new HashSet<V>();
-    for (let i = 0; i < (oneOfThem as V[]).length; i++) {
-      const v = (oneOfThem as V[])[i];
-      ds.add(v);
-    }
-    return ds;
-  }
-
   private dict: HashMap<V, undefined>;
 
+  /**
+   * A function constructor that handles a native Set, a values array, or an iterable
+   * @group Constructors
+   */
+  static from<V>(): HashSet<V>;
+  static from<V>(set: Set<V>): HashSet<V>;
+  static from<V>(values: readonly V[]): HashSet<V>;
+  static from<V>(iterable: Iterable<V>): HashSet<V>;
+  static from<V>(oneOfThem?: Iterable<V> | Set<V> | readonly V[]): HashSet<V> {
+    return new HashSet<V>(oneOfThem);
+  }
+
   constructor();
-  constructor(values: readonly V[] | null);
-  constructor(iterable: Iterable<V> | null);
+  constructor(values?: readonly V[] | null);
+  constructor(iterable?: Iterable<V> | null);
   constructor(iterable?: Iterable<V> | null) {
     this.dict = new HashMap<V, undefined>();
     if (iterable != null) {

@@ -1,4 +1,4 @@
-import type { HashMap } from '../structures/hashMap';
+import type { HashMap } from '../../structures/hashMap';
 
 /** @internal */
 export const createPath = <T>(prevMap: HashMap<T, T>, final: T) => {

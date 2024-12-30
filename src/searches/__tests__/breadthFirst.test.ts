@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 
-import { getNeighbors4, makeGrid } from '../__tests__/utils';
-import type { Point } from '../__tests__/utils';
-import { HashSet } from '../structures/hashSet';
-import { isEqual } from '../utils/isEqual';
+import { isEqual } from '../../helpers/isEqual';
+import { HashSet } from '../../structures/hashSet';
+import { breadthFirstSearch, breadthFirstTraversal } from '../breadthFirst';
 
-import { breadthFirstSearch, breadthFirstTraversal } from './breadthFirst';
+import type { Point } from './utils';
+import { getNeighbors4, makeGrid } from './utils';
 
 describe('breadth first', () => {
   test('breadthFirstTraversal', () => {

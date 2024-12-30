@@ -1,6 +1,7 @@
-import { dijkstraAssoc } from '../dijkstra/dijkstra';
+import { isEqual } from '../helpers/isEqual';
 import { HashSet } from '../structures/hashSet';
-import { isEqual } from '../utils/isEqual';
+
+import { dijkstraAssoc } from './dijkstra';
 
 /**
  *

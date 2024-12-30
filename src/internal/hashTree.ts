@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable line-comment-position */
 /* eslint-disable complexity */
 /* eslint-disable no-bitwise */
 /* eslint-disable no-plusplus */

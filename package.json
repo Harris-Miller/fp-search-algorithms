@@ -1,18 +1,35 @@
 {
   "name": "fp-search-algorithms",
-  "version": "0.6.0",
+  "type": "module",
+  "version": "0.7.0",
+  "description": "Functional Programming Style Search Algorithms",
   "author": "Harris Miller <harrismillerconsulting@gmail.com>",
+  "license": "BSD-3-Clause",
+  "keywords": [
+    "functional",
+    "fp",
+    "search",
+    "algorithm",
+    "breadth",
+    "depth",
+    "dijkstra",
+    "astar",
+    "a*",
+    "yen",
+    "hashmap",
+    "hashset",
+    "directed",
+    "graph",
+    "priority",
+    "queue"
+  ],
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
   "main": "dist/index.cjs",
   "module": "dist/index.js",
-  "devDependencies": {
-    "@rollup/plugin-node-resolve": "^16.0.0",
-    "@rollup/plugin-typescript": "^12.1.2",
-    "@types/bun": "latest",
-    "eslint-config-harris": "^4.2.1",
-    "rollup": "^4.28.1",
-    "typedoc": "^0.27.5",
-    "typescript": "^5.7.2"
-  },
+  "types": "dist/index.d.ts",
   "exports": {
     "./package.json": "./package.json",
     ".": {
@@ -21,12 +38,6 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "description": "Functional Programming Style Search Algorithms",
-  "files": [
-    "dist"
-  ],
-  "keywords": [],
-  "license": "BSD-3-Clause",
   "scripts": {
     "build": "rollup -c",
     "docs": "typedoc ./src/index.ts",
@@ -34,7 +45,13 @@
     "test": "bun test",
     "typecheck": "tsc"
   },
-  "sideEffects": false,
-  "type": "module",
-  "types": "dist/index.d.ts"
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/bun": "latest",
+    "eslint-config-harris": "^4.2.3",
+    "rollup": "^4.29.1",
+    "typedoc": "^0.27.6",
+    "typescript": "^5.7.2"
+  }
 }

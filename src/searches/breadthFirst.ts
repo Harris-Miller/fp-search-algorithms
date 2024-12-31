@@ -4,7 +4,6 @@ import { HashSet } from '../structures/hashSet';
  * Dynamically generates and walks a tree in breadth-first order
  * This tree produces all possible pathways, and will revisit nodes, but not among its own unique pathway
  *
- * @public
  * @category BreadthFirst
  * @param getNextStates - a function to generate list of neighboring states given the current state
  * @param forest - top level "forest" of states to begin traversal from
@@ -34,7 +33,6 @@ export const generateBreadthFirstTreeTraversal = function* <T>(
  * * `path` is, including current state, the in order steps it took to get to that state
  * * states are never re-visited
  *
- * @public
  * @category BreadthFirst
  * @param getNextStates - a function to generate list of neighboring states given the current state
  * @param initial - initial state
@@ -69,7 +67,6 @@ export const generateBreadthFirstSearch = function* <T>(
  * Performs a breadth-first-search (bfs) over a set of states starting from an `initial`
  * Returns a `{ path: T[]; state: T }` when solution found, `undefined` otherwise
  *
- * @public
  * @category BreadthFirst
  * @param getNextStates - a function to generate list of neighboring states given the current state
  * @param determineIfFound - a function to determine if solution found

@@ -43,10 +43,26 @@ const structurallyCompatibleObjects = (a: object, b: object) => {
 };
 
 /**
- * Deep equality check
+ * Check for equality by structure of two values
+ * * Returns true if strict equality (`===`) returns true
+ * * Values of different `typeof` return `false`
+ * * Objects with different constructors return `false`
+ * * Dates return true if both `>` and `<` return false
+ * * ArrayBuffers return true when byteLength are equal and if values at all indexes are equal
+ * * Arrays return true when lengths are equal and when values at all indexes pass `isEqual()` recursively
+ * * Sets returns true when both are empty or when all keys equal on both
+ * * Maps returns true when both are empty, when all keys equal on both, and when those key's values pass `isEqual()` recursively
+ * * Dispatches to first argument's prototype method `equals: (other) => boolean` if exists
+ * * Objects return true when both share same enumerable keys and all key's values  pass `isEqual()` recursively
  *
- * @public
+ * Exceptions:
+ * * Functions, Promises, WeakSets, and WeakMaps are checked by reference
+ *
+ * Notes:
+ * * `isEqual({}, Object.create(null))` will always be `false`, regardless of keys/values because they don't share the same constructor
+ *
  * @category Helpers
+ * @returns boolean indicating whether the values are equal in value, structure, or reference
  */
 export const isEqual = <T>(x: T, y: T) => {
   const values: unknown[] = [x, y];
@@ -72,8 +88,9 @@ export const isEqual = <T>(x: T, y: T) => {
       try {
         if ((a as { equals: (o: unknown) => boolean }).equals(b)) continue;
         else return false;
-        // eslint-disable-next-line no-empty
-      } catch {}
+      } catch {
+        // fall-through
+      }
     }
 
     if (a instanceof Map) {
@@ -83,11 +100,20 @@ export const isEqual = <T>(x: T, y: T) => {
       }
     } else {
       // assume a and b are objects
+      const aKeys = Object.keys(a);
+      const bKeys = Object.keys(b);
+      const bKeysSet = new Set(bKeys);
+
+      if (aKeys.length !== bKeys.length) return false;
+
       const extra = a instanceof globalThis.Error ? ['message'] : [];
-      for (const k of [...extra, ...Object.keys(a)]) {
+      for (const k of [...extra, ...aKeys]) {
         // @ts-expect-error
         values.push(a[k], b[k]);
+        bKeysSet.delete(k);
       }
+
+      if (bKeysSet.size) return false;
     }
   }
 

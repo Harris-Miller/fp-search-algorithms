@@ -15,7 +15,6 @@ import { createPath } from './internal/createPath';
  * * If the solved state is found, that will be the final yield, otherwise the final yield will happen once all possible states are visited
  * * Generator `return` value (at `done: true`) will be the found solution or undefined
  *
- * @public
  * @category AStar
  * @param getNextStates - a function to generate list of neighboring states with associated transition costs given the current state
  * @param estimateRemainingCost - a heuristic function to determine remaining cost
@@ -78,7 +77,6 @@ export const generateAStarAssoc = function* <T>(
  * * If the solved state is found, that will be the final yield, otherwise the final yield will happen once all possible states are visited
  * * The return value is the total cost and path, or undefined if path to solved state is not possible
  *
- * @public
  * @category AStar
  * @param getNextStates - a function to generate list of neighboring states given the current state
  * @param getCost - a function to generate transition costs between neighboring states
@@ -100,7 +98,6 @@ export const generateAStar = function* <T>(
 /**
  * Performs a best-first search using the A* search algorithm
  *
- * @public
  * @category AStar
  * @param getNextStates - a function to generate list of neighboring states with associated transition costs given the current state
  * @param estimateRemainingCost - a heuristic function to determine remaining cost
@@ -125,7 +122,6 @@ export const aStarAssoc = <T>(
 /**
  * Performs a best-first search using the A* search algorithm
  *
- * @public
  * @category AStar
  * @param getNextStates - a function to generate list of neighboring states given the current state
  * @param getCost - a function to generate transition costs between neighboring states

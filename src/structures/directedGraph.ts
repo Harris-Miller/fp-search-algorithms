@@ -6,7 +6,6 @@ import { HashSet } from './hashSet';
 /**
  * Tuple representing an Edge between to Vertices
  *
- * @public
  * @category Structures
  */
 export type Edge<V> = [from: V, to: V];
@@ -21,7 +20,6 @@ const pruneShortPath = (counter: number, min: number): boolean => counter < min;
  * Port of Erlang's digraph
  * WIP
  *
- * @public
  * @category Structures
  */
 export class DirectedGraph<V, L = unknown> {

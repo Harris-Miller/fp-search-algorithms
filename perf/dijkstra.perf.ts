@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 /* eslint-disable no-plusplus */
 import * as R from 'ramda';
@@ -8,22 +10,11 @@ import type { Point } from '../src/searches/__tests__/utils';
 import { dijkstra } from '../src/searches/dijkstra';
 import { HashSet } from '../src/structures/hashSet';
 
-import { dijkstra as dijkstraOrig } from './dijkstra.orig';
+import { maximum, minimum } from './helpers';
+import { dijkstra as dijkstraOrig } from './originals/dijkstra.orig';
 
 // Testing my original Dijkstra algorithm versus the new one that simply utilizes AStar
 // oddly enough, the AStar one seems to be a bit faster, but it's pretty negligible, milliseconds difference
-
-const minimum = (a: number[]) =>
-  a.reduce(
-    R.minBy((x: number) => x),
-    Infinity,
-  );
-
-const maximum = (a: number[]) =>
-  a.reduce(
-    R.maxBy((x: number) => x),
-    0,
-  );
 
 const url = new URL('../src/searches/__tests__/cheeseSearch.txt', import.meta.url);
 const contents = await Bun.file(url).text();

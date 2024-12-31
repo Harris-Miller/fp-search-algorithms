@@ -1,6 +1,6 @@
-import { createPath } from '../src/searches/internal/createPath';
-import { HashMap } from '../src/structures/hashMap';
-import { PriorityQueue } from '../src/structures/priorityQueue';
+import { createPath } from '../../src/searches/internal/createPath';
+import { HashMap } from '../../src/structures/hashMap';
+import { PriorityQueue } from '../../src/structures/priorityQueue';
 
 // This file is the previous stand-alone implementation of Dijkstra before I made it use AStar with a heuristic `() => 0`
 
@@ -16,7 +16,6 @@ import { PriorityQueue } from '../src/structures/priorityQueue';
  * * If the solved state is found, that will be the final yield, otherwise the final yield will happen once all possible states are visited
  * * The return value is the total cost and path, or undefined if path to solved state is not possible
  *
- * @public
  * @category Dijkstra
  * @param getNextStates - a function to generate list of neighboring states with associated transition costs given the current state
  * @param determineIfFound - a function to determine if solution found
@@ -74,7 +73,7 @@ export const generateDijkstraAssoc = function* <T>(
  * * If the solved state is found, that will be the final yield, otherwise the final yield will happen once all possible states are visited
  * * The return value is the total cost and path, or undefined if path to solved state is not possible
  *
- * @public
+ 
  * @category Dijkstra
  * @param getNextStates - a function to generate list of neighboring states given the current state
  * @param getCost - a function to generate transition costs between neighboring states
@@ -94,7 +93,7 @@ export const generateDijkstra = function* <T>(
 /**
  * Performs a best-first search using the Dijkstra search algorithm
  *
- * @public
+ 
  * @category Dijkstra
  * @param getNextStates - a function to generate list of neighboring states and costs given the current state
  * @param determineIfFound - a function to determine if solution found
@@ -117,7 +116,7 @@ export const dijkstraAssoc = <T>(
 /**
  * Performs a best-first search using the Dijkstra search algorithm
  *
- * @public
+ 
  * @category Dijkstra
  * @param getNextStates - a function to generate list of neighboring states with associated transition costs given the current state
  * @param getCost - a function to generate transition costs between neighboring states

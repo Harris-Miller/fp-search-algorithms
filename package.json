@@ -2,8 +2,9 @@
   "name": "fp-search-algorithms",
   "type": "module",
   "version": "0.7.0",
-  "description": "Functional Programming Style Search Algorithms",
+  "description": "Functional Programming Style Search Algorithms and Unordered Containers",
   "author": "Harris Miller <harrismillerconsulting@gmail.com>",
+  "homepage": "https://github.com/Harris-Miller/fp-search-algorithms",
   "license": "BSD-3-Clause",
   "keywords": [
     "functional",
@@ -21,7 +22,9 @@
     "directed",
     "graph",
     "priority",
-    "queue"
+    "queue",
+    "containers",
+    "unordered"
   ],
   "sideEffects": false,
   "files": [

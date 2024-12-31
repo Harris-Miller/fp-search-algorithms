@@ -1,18 +1,17 @@
-/* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/no-use-before-define */
+/* eslint-disable complexity */
 /* eslint-disable no-bitwise */
 /* eslint-disable no-plusplus */
 /* eslint-disable prefer-arrow/prefer-arrow-functions */
 /* eslint-disable func-style */
 
+import { isEqual } from '../../src/helpers/isEqual';
+import { getHash } from '../../src/structures/internal/hashing';
+
 //
 // Credit to: https://github.com/gleam-lang/stdlib/blob/main/src/dict.mjs
 // Ported to typescript and removed immutability for performance gains
 //
-
-import { isEqual } from '../../helpers/isEqual';
-
-import { getHash } from './hashing';
 
 const SHIFT = 5; // number of bits you need to shift by to get the next bucket
 const BUCKET_SIZE = 2 ** SHIFT;
@@ -39,25 +38,23 @@ type Flag = { val: boolean };
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const createEmptyNode = (): IndexNode<any, any> => ({
+export const EMPTY: IndexNode<any, any> = {
   array: [],
   bitmap: 0,
   type: INDEX_NODE,
-});
+};
 
 /**
  * Mask the hash to get only the bucket corresponding to shift
- * @internal
  */
-export function mask(hash: number, shift: number): number {
+function mask(hash: number, shift: number): number {
   return (hash >>> shift) & MASK;
 }
 
 /**
  * Set only the Nth bit where N is the masked hash
- * @internal
  */
-export function bitpos(hash: number, shift: number): number {
+function bitpos(hash: number, shift: number): number {
   return 1 << mask(hash, shift);
 }
 
@@ -65,12 +62,14 @@ export function bitpos(hash: number, shift: number): number {
  * Count the number of 1 bits in a number
  */
 function bitcount(x: number): number {
+  /* eslint-disable no-param-reassign */
   x -= (x >> 1) & 0x55555555;
   x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
   x = (x + (x >> 4)) & 0x0f0f0f0f;
   x += x >> 8;
   x += x >> 16;
   return x & 0x7f;
+  /* eslint-enable no-param-reassign */
 }
 
 /**
@@ -78,6 +77,55 @@ function bitcount(x: number): number {
  */
 function index(bitmap: number, bit: number): number {
   return bitcount(bitmap & (bit - 1));
+}
+
+/**
+ * Efficiently copy an array and set one value at an index
+ */
+function cloneAndSet<T>(arr: T[], at: number, val: T): T[] {
+  const len = arr.length;
+  const out = new Array<T>(len);
+  for (let i = 0; i < len; ++i) {
+    out[i] = arr[i];
+  }
+  out[at] = val;
+  return out;
+}
+
+/**
+ * Efficiently copy an array and insert one value at an index
+ */
+function spliceIn<T>(arr: T[], at: number, val: T): T[] {
+  const len = arr.length;
+  const out = new Array<T>(len + 1);
+  let i = 0;
+  let g = 0;
+  while (i < at) {
+    out[g++] = arr[i++];
+  }
+  out[g++] = val;
+  while (i < len) {
+    out[g++] = arr[i++];
+  }
+  return out;
+}
+
+/**
+ * Efficiently copy an array and remove one value at an index
+ */
+function spliceOut<T>(arr: T[], at: number): T[] {
+  const len = arr.length;
+  const out = new Array<T>(len - 1);
+  let i = 0;
+  let g = 0;
+  while (i < at) {
+    out[g++] = arr[i++];
+  }
+  ++i;
+  while (i < len) {
+    out[g++] = arr[i++];
+  }
+  return out;
 }
 
 /**
@@ -96,14 +144,7 @@ function createNode<K, V>(shift: number, key1: K, val1: V, key2hash: number, key
     };
   }
   const addedLeaf = { val: false };
-  return assoc(
-    assocIndex(createEmptyNode(), shift, key1hash, key1, val1, addedLeaf),
-    shift,
-    key2hash,
-    key2,
-    val2,
-    addedLeaf,
-  );
+  return assoc(assocIndex(EMPTY, shift, key1hash, key1, val1, addedLeaf), shift, key2hash, key2, val2, addedLeaf);
 }
 
 /**
@@ -140,32 +181,53 @@ function assocArray<K, V>(
 ): Node<K, V> {
   const idx = mask(hash, shift);
   const node = root.array[idx];
-
   // if the corresponding index is empty set the index to a newly created node
   if (node === undefined) {
+    // eslint-disable-next-line no-param-reassign
     addedLeaf.val = true;
-    root.array[idx] = { k: key, type: ENTRY, v: val };
-    root.size += 1;
-    return root;
+    return {
+      array: cloneAndSet(root.array, idx, { k: key, type: ENTRY, v: val }),
+      size: root.size + 1,
+      type: ARRAY_NODE,
+    };
   }
-
   if (node.type === ENTRY) {
     // if keys are equal replace the entry
     if (isEqual(key, node.k)) {
-      if (val === node.v) return root;
-      root.array[idx] = { k: key, type: ENTRY, v: val };
-      return root;
+      if (val === node.v) {
+        return root;
+      }
+      return {
+        array: cloneAndSet(root.array, idx, {
+          k: key,
+          type: ENTRY,
+          v: val,
+        }),
+        size: root.size,
+        type: ARRAY_NODE,
+      };
     }
-
     // otherwise upgrade the entry to a node and insert
+    // eslint-disable-next-line no-param-reassign
     addedLeaf.val = true;
-    root.array[idx] = createNode(shift + SHIFT, node.k, node.v, hash, key, val);
+    return {
+      array: cloneAndSet(root.array, idx, createNode(shift + SHIFT, node.k, node.v, hash, key, val)),
+      size: root.size,
+      type: ARRAY_NODE,
+    };
+  }
+  // otherwise call assoc on the child node
+  const n = assoc(node, shift + SHIFT, hash, key, val, addedLeaf);
+  // if the child node hasn't changed just return the old root
+  if (n === node) {
     return root;
   }
-
-  // otherwise call assoc on the child node
-  root.array[idx] = assoc(node, shift + SHIFT, hash, key, val, addedLeaf);
-  return root;
+  // otherwise set the index to the new node
+  return {
+    array: cloneAndSet(root.array, idx, n),
+    size: root.size,
+    type: ARRAY_NODE,
+  };
 }
 
 function assocIndex<K, V>(
@@ -184,24 +246,40 @@ function assocIndex<K, V>(
     const node = root.array[idx];
     if (node.type !== ENTRY) {
       const n = assoc(node, shift + SHIFT, hash, key, val, addedLeaf);
-      root.array[idx] = n;
-      return root;
+      if (n === node) {
+        return root;
+      }
+      return {
+        array: cloneAndSet(root.array, idx, n),
+        bitmap: root.bitmap,
+        type: INDEX_NODE,
+      };
     }
-
     // otherwise there is an entry at the index
     // if the keys are equal replace the entry with the updated value
     const nodeKey = node.k;
     if (isEqual(key, nodeKey)) {
-      if (val === node.v) return root;
-      node.v = val;
-      return root;
+      if (val === node.v) {
+        return root;
+      }
+      return {
+        array: cloneAndSet(root.array, idx, {
+          k: key,
+          type: ENTRY,
+          v: val,
+        }),
+        bitmap: root.bitmap,
+        type: INDEX_NODE,
+      };
     }
-
     // if the keys are not equal, replace the entry with a new child node
+    // eslint-disable-next-line no-param-reassign
     addedLeaf.val = true;
-    root.array[idx] = createNode(shift + SHIFT, nodeKey, node.v, hash, key, val);
-    root.type = INDEX_NODE;
-    return root;
+    return {
+      array: cloneAndSet(root.array, idx, createNode(shift + SHIFT, nodeKey, node.v, hash, key, val)),
+      bitmap: root.bitmap,
+      type: INDEX_NODE,
+    };
   }
   // else there is currently no item at the hash index
   const n = root.array.length;
@@ -211,7 +289,7 @@ function assocIndex<K, V>(
     const nodes = new Array<Entry<K, V> | Node<K, V>>(32);
     // create and insert a node for the new entry
     const jdx = mask(hash, shift);
-    nodes[jdx] = assocIndex(createEmptyNode(), shift + SHIFT, hash, key, val, addedLeaf);
+    nodes[jdx] = assocIndex(EMPTY, shift + SHIFT, hash, key, val, addedLeaf);
     let j = 0;
     let { bitmap } = root;
     // place each item in the index node into the correct spot in the array node
@@ -230,20 +308,20 @@ function assocIndex<K, V>(
       type: ARRAY_NODE,
     };
   }
-
   // else there is still space in this index node
   // simply insert a new entry at the hash index
-
-  addedLeaf.val = true;
-
-  const newEntryNode: Entry<K, V> = {
+  const newArray = spliceIn(root.array, idx, {
     k: key,
     type: ENTRY,
     v: val,
+  });
+  // eslint-disable-next-line no-param-reassign
+  addedLeaf.val = true;
+  return {
+    array: newArray,
+    bitmap: root.bitmap | bit,
+    type: INDEX_NODE,
   };
-  root.array.splice(idx, 0, newEntryNode);
-  root.bitmap |= bit;
-  return root;
 }
 
 function assocCollision<K, V>(
@@ -260,19 +338,25 @@ function assocCollision<K, V>(
     // if this key already exists replace the entry with the new value
     if (idx !== -1) {
       const entry = root.array[idx];
-
-      if (entry.v === val) return root;
-
-      root.array[idx] = { k: key, type: ENTRY, v: val };
-      return root;
+      if (entry.v === val) {
+        return root;
+      }
+      return {
+        array: cloneAndSet(root.array, idx, { k: key, type: ENTRY, v: val }),
+        hash,
+        type: COLLISION_NODE,
+      };
     }
-
     // otherwise insert the entry at the end of the array
+    const size = root.array.length;
+    // eslint-disable-next-line no-param-reassign
     addedLeaf.val = true;
-    root.array.push({ k: key, type: ENTRY, v: val });
-    return root;
+    return {
+      array: cloneAndSet(root.array, size, { k: key, type: ENTRY, v: val }),
+      hash,
+      type: COLLISION_NODE,
+    };
   }
-
   // if there is no hash collision, upgrade to an index node
   return assoc(
     {
@@ -378,9 +462,10 @@ export function without<K, V>(root: Node<K, V>, shift: number, hash: number, key
 function withoutArray<K, V>(root: ArrayNode<K, V>, shift: number, hash: number, key: K): Node<K, V> | undefined {
   const idx = mask(hash, shift);
   const node = root.array[idx];
-  if (node === undefined) return root; // already empty
-
-  let n: Node<K, V> | undefined;
+  if (node === undefined) {
+    return root; // already empty
+  }
+  let n;
   // if node is an entry and the keys are not equal there is nothing to remove
   // if node is not an entry do a recursive call
   if (node.type === ENTRY) {
@@ -389,8 +474,11 @@ function withoutArray<K, V>(root: ArrayNode<K, V>, shift: number, hash: number, 
     }
   } else {
     n = without(node, shift + SHIFT, hash, key);
+    if (n === node) {
+      return root; // no changes
+    }
   }
-  // if ENTRY and isEqual, or the recursive call returned undefined, the node should be removed
+  // if the recursive call returned undefined the node should be removed
   if (n === undefined) {
     // if the number of child nodes is at the minimum, pack into an index node
     if (root.size <= MIN_ARRAY_NODE) {
@@ -424,67 +512,84 @@ function withoutArray<K, V>(root: ArrayNode<K, V>, shift: number, hash: number, 
         type: INDEX_NODE,
       };
     }
-
-    root.array[idx] = n;
-    root.size -= 1;
-    return root;
+    return {
+      array: cloneAndSet(root.array, idx, n),
+      size: root.size - 1,
+      type: ARRAY_NODE,
+    };
   }
-
-  root.array[idx] = n;
-  return root;
+  return {
+    array: cloneAndSet(root.array, idx, n),
+    size: root.size,
+    type: ARRAY_NODE,
+  };
 }
 
 function withoutIndex<K, V>(root: IndexNode<K, V>, shift: number, hash: number, key: K): Node<K, V> | undefined {
   const bit = bitpos(hash, shift);
-  if ((root.bitmap & bit) === 0) return root; // already empty
-
+  if ((root.bitmap & bit) === 0) {
+    return root; // already empty
+  }
   const idx = index(root.bitmap, bit);
   const node = root.array[idx];
-
   // if the item is not an entry
   if (node.type !== ENTRY) {
     const n = without(node, shift + SHIFT, hash, key);
-
+    if (n === node) {
+      return root; // no changes
+    }
     // if not undefined, the child node still has items, so update it
     if (n !== undefined) {
-      root.array[idx] = n;
-      return root;
+      return {
+        array: cloneAndSet(root.array, idx, n),
+        bitmap: root.bitmap,
+        type: INDEX_NODE,
+      };
     }
-
     // otherwise the child node should be removed
     // if it was the only child node, remove this node from the parent
-    if (root.bitmap === bit) return undefined;
+    if (root.bitmap === bit) {
+      return undefined;
+    }
     // otherwise just remove the child node
-    root.array.splice(idx, 1);
-    root.bitmap ^= bit;
-    return root;
+    return {
+      array: spliceOut(root.array, idx),
+      bitmap: root.bitmap ^ bit,
+      type: INDEX_NODE,
+    };
   }
-
   // otherwise the item is an entry, remove it if the key matches
   if (isEqual(key, node.k)) {
-    // if it was the only child node, remove this node from the parent
-    if (root.bitmap === bit) return undefined;
-
-    root.array.splice(idx, 1);
-    root.bitmap ^= bit;
-    return root;
+    if (root.bitmap === bit) {
+      return undefined;
+    }
+    return {
+      array: spliceOut(root.array, idx),
+      bitmap: root.bitmap ^ bit,
+      type: INDEX_NODE,
+    };
   }
-
   return root;
 }
 
+/** @internal */
 function withoutCollision<K, V>(root: CollisionNode<K, V>, key: K): Node<K, V> | undefined {
   const idx = collisionIndexOf(root, key);
   // if the key not found, no changes
-  if (idx < 0) return root;
-
+  if (idx < 0) {
+    return root;
+  }
   // otherwise the entry was found, remove it
   // if it was the only entry in this node, remove the whole node
-  if (root.array.length === 1) return undefined;
-
+  if (root.array.length === 1) {
+    return undefined;
+  }
   // otherwise just remove the entry
-  root.array.splice(idx, 1);
-  return root;
+  return {
+    array: spliceOut(root.array, idx),
+    hash: root.hash,
+    type: COLLISION_NODE,
+  };
 }
 
 /** @internal */

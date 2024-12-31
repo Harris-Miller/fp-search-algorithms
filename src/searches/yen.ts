@@ -10,7 +10,6 @@ import { dijkstraAssoc } from './dijkstra';
  * If array has less then k items, there were less than that many total paths to the solution
  * If an empty array is returned, there are zero paths to the solution
  *
- * @public
  * @category Yen
  * @param getNextStates - a function to generate list of neighboring states with associated transition costs given the current state
  * @param determineIfFound - a function to determine if solution found
@@ -99,7 +98,6 @@ export const yenAssoc = <T>(
  * If array has less then k items, there were less than that many total paths to the solution
  * If an empty array is returned, there are zero paths to the solution
  *
- * @public
  * @category Yen
  * @param getNextStates - a function to generate list of neighboring states given the current state
  * @param getCost - a function to generate transition costs between neighboring states

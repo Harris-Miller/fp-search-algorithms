@@ -10,7 +10,6 @@ const right = (i: number) => (i + 1) << 1;
 
 /**
  *
- * @public
  * @category Structures
  */
 export class PriorityQueue<T> {

@@ -6,8 +6,10 @@
 /* eslint-disable func-style */
 
 //
-// Credit to: https://github.com/gleam-lang/stdlib/blob/main/src/dict.mjs
-// Ported to typescript and removed immutability for performance gains
+// This file is a fork of: https://github.com/gleam-lang/stdlib/blob/main/src/dict.mjs
+// * ported to typescript
+// * originally written with full immutability for Gleam, but I updated it to do in-place mutations for performance gains
+// * My HashMap and HashSet are intentionally mutable to match that characteristic of the native Map and Set
 //
 
 import { isEqual } from '../../helpers/isEqual';

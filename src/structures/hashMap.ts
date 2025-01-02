@@ -468,19 +468,25 @@ export class HashMap<K, V> implements Iterable<[K, V]> {
    * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead.
    */
   reduce<U>(callbackfn: (accumulator: U, value: V, key: K, hashMap: HashMap<K, V>) => U, initialValue: U): U;
-  reduce<U>(
-    callbackfn: (accumulator: NonNullable<U>, value: V, key: K, hashMap: HashMap<K, V>) => NonNullable<U>,
-    initialValue?: U,
-  ): NonNullable<U> {
+  reduce<U>(callbackfn: (accumulator: U, value: V, key: K, hashMap: HashMap<K, V>) => U, initialValue?: U): U {
     if (arguments.length === 1 && this.size === 0) {
       throw new TypeError('Reduce of empty HashMap with no initial value');
     }
 
-    let acc = initialValue ?? (this.values().take(1).toArray()[0] as NonNullable<U>);
-    const iterator = initialValue === undefined ? this.entries().drop(1) : this.entries();
-    for (const [k, v] of iterator) {
+    let entries = Array.from(this.entries());
+    let acc: U;
+    if (arguments.length === 1) {
+      const [head, ...rest] = entries;
+      acc = head as unknown as U;
+      entries = rest;
+    } else {
+      acc = initialValue!;
+    }
+
+    for (const [k, v] of entries) {
       acc = callbackfn(acc, v, k, this);
     }
+
     return acc;
   }
 

@@ -470,19 +470,25 @@ export class HashSet<T> implements Iterable<T> {
    * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead.
    */
   reduce<U>(callbackfn: (accumulator: U, value: T, hashSet: HashSet<T>) => U, initialValue: U): U;
-  reduce<U>(
-    callbackfn: (accumulator: NonNullable<U>, value: T, hashSet: HashSet<T>) => NonNullable<U>,
-    initialValue?: U,
-  ): NonNullable<U> {
+  reduce<U>(callbackfn: (accumulator: U, value: T, hashSet: HashSet<T>) => U, initialValue?: U): U {
     if (arguments.length === 1 && this.size === 0) {
       throw new TypeError('Reduce of empty HashSet with no initial value');
     }
 
-    let acc = initialValue ?? (this.values().take(1).toArray()[0] as NonNullable<U>);
-    const iterator = initialValue === undefined ? this.values().drop(1) : this.values();
-    for (const v of iterator) {
+    let values = Array.from(this.values());
+    let acc: U;
+    if (arguments.length === 1) {
+      const [head, ...rest] = values;
+      acc = head as unknown as U;
+      values = rest;
+    } else {
+      acc = initialValue!;
+    }
+
+    for (const v of values) {
       acc = callbackfn(acc, v, this);
     }
+
     return acc;
   }
 

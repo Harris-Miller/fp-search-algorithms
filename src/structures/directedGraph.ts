@@ -261,21 +261,21 @@ export class DirectedGraph<V, L = unknown> {
    * @group Advanced
    */
   reachable(vertices: V[]): V[] {
-    return this.postGenerate(vertices, false).toArray();
+    return Array.from(this.postGenerate(vertices, false));
   }
 
   /**
    * @group Advanced
    */
   reachableNeighbors(vertices: V[]): V[] {
-    return this.postGenerate(vertices, true).toArray();
+    return Array.from(this.postGenerate(vertices, true));
   }
 
   /**
    * @group Advanced
    */
   postOrder(): V[] {
-    return this.postGenerate([...this.vertices], false).toArray();
+    return Array.from(this.postGenerate([...this.vertices], false));
   }
 
   /**

@@ -256,14 +256,9 @@ export class HashMap<K, V> implements Iterable<[K, V]> {
    * @returns Returns the element associated with the specified key. If no element is associated with the specified key, undefined is returned.
    */
   get(key: K): V | undefined {
-    if (this.root === undefined) {
-      return undefined;
-    }
+    if (this.root === undefined) return undefined;
     const found = find(this.root, 0, getHash(key), key);
-    if (found === undefined) {
-      return undefined;
-    }
-    return found.v;
+    return found?.v;
   }
 
   /**
@@ -271,9 +266,7 @@ export class HashMap<K, V> implements Iterable<[K, V]> {
    * @returns boolean indicating whether an element with the specified key exists or not.
    */
   has(key: K): boolean {
-    if (this.root === undefined) {
-      return false;
-    }
+    if (this.root === undefined) return false;
     return find(this.root, 0, getHash(key), key) !== undefined;
   }
 
@@ -284,11 +277,7 @@ export class HashMap<K, V> implements Iterable<[K, V]> {
   set(key: K, val: V): HashMap<K, V> {
     const addedLeaf = { val: false };
     const root = this.root ?? createEmptyNode();
-    const newRoot = assoc(root, 0, getHash(key), key, val, addedLeaf);
-    // if (newRoot === this.root) {
-    //   return this;
-    // }
-    this.root = newRoot;
+    this.root = assoc(root, 0, getHash(key), key, val, addedLeaf);
     this._size = addedLeaf.val ? this._size + 1 : this._size;
     return this;
   }

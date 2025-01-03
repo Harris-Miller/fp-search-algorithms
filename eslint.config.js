@@ -16,9 +16,17 @@ const eslintConfig = [
   {
     rules: {
       'no-continue': 'off',
+      'no-redeclare': 'error',
+    },
+  },
+  {
+    files: ['**/*.ts', '**/*.mts', '**/*.tsx'],
+    rules: {
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/prefer-for-of': 'off',
+      'no-redeclare': 'off',
+      '@typescript-eslint/no-redeclare': 'off', // typescript compiler handles this directly, not needed for .ts files
     },
   },
   {

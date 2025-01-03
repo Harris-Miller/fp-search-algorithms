@@ -11,20 +11,10 @@
 // Ported to typescript
 //
 
-export class Point {
-  constructor(
-    public x: number,
-    public y: number,
-  ) {}
-
-  distance(): number {
-    return Math.sqrt(this.x ** 2 + this.y ** 2);
-  }
-}
-
 const referenceMap = new WeakMap<WeakKey, number>();
 const tempDataView = new DataView(new ArrayBuffer(8));
 let referenceUID = 0;
+
 /**
  * hash the object by reference using a weak map and incrementing uid
  */

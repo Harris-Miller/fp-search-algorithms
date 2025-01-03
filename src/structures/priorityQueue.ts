@@ -1,6 +1,6 @@
 const TOP = 0;
 /* eslint-disable no-bitwise */
-// get parent index
+// get parent index (intDiv(i, 2))
 const parent = (i: number) => ((i + 1) >>> 1) - 1;
 // double + 1
 const left = (i: number) => (i << 1) + 1;

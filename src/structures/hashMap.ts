@@ -477,7 +477,7 @@ export class HashMap<K, V> implements Iterable<[K, V]> {
     let acc: U;
     if (arguments.length === 1) {
       const [head, ...rest] = entries;
-      acc = head as unknown as U;
+      acc = head[1] as unknown as U;
       entries = rest;
     } else {
       acc = initialValue!;

@@ -63,22 +63,22 @@ export class PriorityQueue<T> {
   };
 
   private siftUp() {
-    let node = this.size() - 1;
-    while (node > TOP && this.greater(node, parent(node))) {
-      this.swap(node, parent(node));
-      node = parent(node);
+    let i = this.size() - 1;
+    while (i > TOP && this.greater(i, parent(i))) {
+      this.swap(i, parent(i));
+      i = parent(i);
     }
   }
 
   private siftDown() {
-    let node = TOP;
+    let i = TOP;
     while (
-      (left(node) < this.size() && this.greater(left(node), node)) ||
-      (right(node) < this.size() && this.greater(right(node), node))
+      (left(i) < this.size() && this.greater(left(i), i)) ||
+      (right(i) < this.size() && this.greater(right(i), i))
     ) {
-      const maxChild = right(node) < this.size() && this.greater(right(node), left(node)) ? right(node) : left(node);
-      this.swap(node, maxChild);
-      node = maxChild;
+      const maxChild = right(i) < this.size() && this.greater(right(i), left(i)) ? right(i) : left(i);
+      this.swap(i, maxChild);
+      i = maxChild;
     }
   }
 }

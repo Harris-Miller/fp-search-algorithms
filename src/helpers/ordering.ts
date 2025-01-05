@@ -19,8 +19,16 @@ export const getType = (thing: any): ValidOrderTypes => {
     throw new TypeError('cannot order instances of WeakSet');
   }
 
+  if (thing instanceof Set) {
+    throw new TypeError('cannot order instances of Set');
+  }
+
   if (thing instanceof WeakMap) {
     throw new TypeError('cannot order instances of WeakMap');
+  }
+
+  if (thing instanceof Map) {
+    throw new TypeError('cannot order instances of Map');
   }
 
   if (thing instanceof ArrayBuffer) {
@@ -84,8 +92,8 @@ export const omniCompare = (a: any, b: any): Ord => {
       const lenB = b.length;
       let i = 0;
       while (i < lenA) {
-        // this means b has more items than a
-        if (i === lenB) return LT;
+        // this means b has less items than a
+        if (i === lenB) return GT;
         const r = omniCompare(a[i], b[i]);
         if (r !== EQ) return r;
         i++;
@@ -112,8 +120,18 @@ export const omniCompare = (a: any, b: any): Ord => {
     }
   }
 
-  throw new Error('omniCompare has received a yet to be implemented type');
-
-  // TODO, the rest
-  // return EQ;
+  const aKeys = Object.keys(a as object).sort();
+  const bKeys = Object.keys(b as object).sort();
+  const lenA = aKeys.length;
+  const lenB = bKeys.length;
+  let i = 0;
+  while (i < lenA) {
+    // this means b has less items than a
+    if (i === lenB) return GT;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const r = omniCompare(a[aKeys[i]], b[bKeys[i]]);
+    if (r !== EQ) return r;
+    i++;
+  }
+  return lenB > lenA ? LT : EQ;
 };

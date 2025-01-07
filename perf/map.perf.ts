@@ -146,6 +146,75 @@ console.log('');
 //
 //
 
+t0 = performance.now();
+randomNums.forEach(([k]) => {
+  map.has(k);
+});
+t1 = performance.now();
+console.log('Map find existing', t1 - t0);
+
+t0 = performance.now();
+randomNums.forEach(([k]) => {
+  hashMap.has(k);
+});
+t1 = performance.now();
+console.log('HashMap find existing', t1 - t0);
+
+t0 = performance.now();
+randomTuples.forEach(([k]) => {
+  hashMapTuple.has(k);
+});
+t1 = performance.now();
+console.log('HashMap find existing (tuples)', t1 - t0);
+
+t0 = performance.now();
+randomNums.forEach(([k]) => {
+  orderedMap.has(k);
+});
+t1 = performance.now();
+console.log('OrderedMap find existing', t1 - t0);
+
+t0 = performance.now();
+randomTuples.forEach(([k]) => {
+  orderedMapTuple.has(k);
+});
+t1 = performance.now();
+console.log('OrderedMap find existing (tuples)', t1 - t0);
+
+t0 = performance.now();
+randomObjects.forEach(([k]) => {
+  orderedMapObj.has(k);
+});
+t1 = performance.now();
+console.log('OrderedMap find existing (objects)', t1 - t0);
+
+t0 = performance.now();
+randomNums.forEach(([k]) => {
+  orderedMap2.has(k);
+});
+t1 = performance.now();
+console.log('OrderedMap2 find existing', t1 - t0);
+
+t0 = performance.now();
+randomTuples.forEach(([k]) => {
+  orderedMap2Tuple.has(k);
+});
+t1 = performance.now();
+console.log('OrderedMap2 find existing (tuples)', t1 - t0);
+
+t0 = performance.now();
+randomObjects.forEach(([k]) => {
+  orderedMap2Obj.has(k);
+});
+t1 = performance.now();
+console.log('OrderedMap2 find existing (objects)', t1 - t0);
+
+//
+//
+console.log('');
+//
+//
+
 let keys = map.keys().toArray();
 t0 = performance.now();
 keys.forEach(k => {

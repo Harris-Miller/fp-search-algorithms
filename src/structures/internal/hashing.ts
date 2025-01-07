@@ -1,11 +1,11 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/no-use-before-define */
-
 /* eslint-disable complexity */
 /* eslint-disable no-bitwise */
 /* eslint-disable no-plusplus */
 /* eslint-disable prefer-arrow/prefer-arrow-functions */
 /* eslint-disable func-style */
+
 //
 // Credit to: https://github.com/gleam-lang/stdlib/blob/main/src/dict.mjs
 // Ported to typescript
@@ -18,7 +18,7 @@ let referenceUID = 0;
 /**
  * hash the object by reference using a weak map and incrementing uid
  */
-function hashByReference(o: WeakKey): number {
+const hashByReference = (o: WeakKey): number => {
   const known = referenceMap.get(o);
   if (known !== undefined) {
     return known;
@@ -29,48 +29,44 @@ function hashByReference(o: WeakKey): number {
   }
   referenceMap.set(o, hash);
   return hash;
-}
+};
 
 /**
  * merge two hashes in an order sensitive way
  */
-export function hashMerge(a: number, b: number): number {
-  return (a ^ (b + 0x9e3779b9 + (a << 6) + (a >> 2))) | 0;
-}
+export const hashMerge = (a: number, b: number): number => (a ^ (b + 0x9e3779b9 + (a << 6) + (a >> 2))) | 0;
 
 /**
  * standard string hash popularized by java
  */
-function hashString(s: string): number {
+const hashString = (s: string): number => {
   let hash = 0;
   const len = s.length;
   for (let i = 0; i < len; i++) {
     hash = (Math.imul(31, hash) + s.charCodeAt(i)) | 0;
   }
   return hash;
-}
+};
 
 /**
  * hash a number by converting to two integers and do some jumbling
  */
-function hashNumber(n: number): number {
+const hashNumber = (n: number): number => {
   tempDataView.setFloat64(0, n);
   const i = tempDataView.getInt32(0);
   const j = tempDataView.getInt32(4);
   return Math.imul(0x45d9f3b, (i >> 16) ^ i) ^ j;
-}
+};
 
 /**
  * hash a BigInt by converting it to a string and hashing that
  */
-function hashBigInt(n: bigint): number {
-  return hashString(n.toString());
-}
+const hashBigInt = (n: bigint): number => hashString(n.toString());
 
 /**
  * hash any js object
  */
-function hashObject(o: object): number {
+const hashObject = (o: object): number => {
   const proto = Object.getPrototypeOf(o) as { hashCode: (v: unknown) => unknown } | null;
   if (proto !== null && typeof proto.hashCode === 'function') {
     try {
@@ -112,7 +108,7 @@ function hashObject(o: object): number {
     }
   }
   return h;
-}
+};
 
 /**
  * hash any js value

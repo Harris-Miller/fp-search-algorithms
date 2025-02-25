@@ -2,8 +2,6 @@ import { HashMap } from '../../structures/hashMap';
 
 export type Point = [number, number];
 
-const max = (x: number, y: number): number => (y > x ? y : x);
-
 export const makeGrid = (s: string) => {
   const l = s.length;
   let i = 0;
@@ -28,7 +26,9 @@ export const makeGrid = (s: string) => {
 };
 
 export const findMax = (grid: HashMap<Point, string>) =>
-  grid.keys().reduce<[number, number]>(([mr, mc], [r, c]) => [max(mr, r), max(mc, c)] as [number, number], [0, 0]);
+  grid
+    .keys()
+    .reduce<[number, number]>(([mr, mc], [r, c]) => [Math.max(mr, r), Math.max(mc, c)] as [number, number], [0, 0]);
 
 export const getNeighbors4 = ([r, c]: Point): Point[] => [
   [r - 1, c],

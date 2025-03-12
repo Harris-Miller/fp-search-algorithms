@@ -4,6 +4,8 @@ import * as R from 'ramda';
 import { HashMap } from '../hashMap';
 import { HashSet } from '../hashSet';
 
+import { toShuffled } from './helpers';
+
 describe('class HashMap', () => {
   describe('constructors', () => {
     describe('static method from', () => {
@@ -487,22 +489,6 @@ describe('class HashMap', () => {
   });
 
   describe('handling large sizes', () => {
-    const toShuffled = <T>(array: T[]): T[] => {
-      const copy = [...array];
-      let currentIndex = array.length;
-
-      // While there remain elements to shuffle...
-      while (currentIndex !== 0) {
-        // Pick a remaining element...
-        const randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
-
-        // And swap it with the current element.
-        [copy[currentIndex], copy[randomIndex]] = [copy[randomIndex], copy[currentIndex]];
-      }
-      return copy;
-    };
-
     it('works as expected', () => {
       // simulate a 100x100 grid with values set to the string concat of their coordinates
       const coords = new Array<[number, number]>(100 * 10);

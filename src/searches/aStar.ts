@@ -1,3 +1,4 @@
+import { isEqual } from '../helpers/isEqual';
 import { HashMap } from '../structures/hashMap';
 import { PriorityQueue } from '../structures/priorityQueue';
 
@@ -35,7 +36,7 @@ export const generateAStarAssoc = function* <T>(
     const aScore = fScore.get(a)!;
     const bScore = fScore.get(b)!;
     return aScore < bScore;
-  });
+  }, isEqual);
   queue.push(initial);
 
   while (!queue.isEmpty()) {
@@ -57,7 +58,11 @@ export const generateAStarAssoc = function* <T>(
         cameFrom.set(nextState, state);
         gScore.set(nextState, tentativeGScore);
         fScore.set(nextState, tentativeGScore + estimateRemainingCost(nextState));
-        queue.push(nextState);
+        if (queue.has(nextState)) {
+          queue.reorder();
+        } else {
+          queue.push(nextState);
+        }
       }
     }
   }

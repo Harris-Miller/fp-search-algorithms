@@ -33,6 +33,12 @@ const next = (p: Point): Point[] =>
     .filter(key => grid.has(key))
     .filter(n => canMoveTo(p, n));
 
+// const getCost = (p1: Point, p2: Point) => {
+//   const h1 = heightMap[grid.get(p1)!];
+//   const h2 = heightMap[grid.get(p2)!];
+//   return h1 > h2 ? 5 : 1;
+// };
+
 describe('aStar', () => {
   it('works', () => {
     const es = grid.entries();
@@ -46,6 +52,7 @@ describe('aStar', () => {
       state => isEqual(state, end),
       start,
     )!;
+    expect(r.path.length).toBe(413);
     expect(r.cost).toBe(412);
   });
 });
